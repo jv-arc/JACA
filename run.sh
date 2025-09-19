@@ -36,7 +36,7 @@ jq --arg key "$apikey" '.apikey = $key' "$backup_file" > "$config_file"
 
 
 if [[ -f ./app/ui/Home.py ]]; then
-    python3 ./app/ui/Home.py
+    python -m streamlit run app/ui/Home.py
 else
     echo "Error: Test entrypoint './app/ui/Home.py' not found." >&2
     exit 1

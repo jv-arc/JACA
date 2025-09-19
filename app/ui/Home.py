@@ -4,7 +4,7 @@ import platform
 import subprocess
 from typing import List, Dict, Any
 
-from app.ui.callouts import Callouts
+
 from app.core.config import Settings
 from app.core.prompt_manager import PromptManager
 from app.core.ai_client import GeminiClient
@@ -13,7 +13,7 @@ from app.core.project_manager import ProjectManager
 from app.core.logger import Logger
 
 # Garante que este bloco execute apenas uma vez por sessão
-@st.cacheresource
+@st.cache_resource
 def initializeservices():
     # 1. Componentes base
     logger = Logger(name="DocAI-App")
