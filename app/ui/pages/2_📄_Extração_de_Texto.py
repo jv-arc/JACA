@@ -1,10 +1,10 @@
 import streamlit as st
 import os
-from src.logger import Logger
-from src.config import Settings
-from src.prompt_manager import PromptManager
-from src.ai_client import GeminiClient
-from src.project_manager import ProjectManager
+from app.core.logger import Logger
+from app.core.config import Settings
+from app.core.prompt_manager import PromptManager
+from app.core.ai_client import GeminiClient
+from app.core.project_manager import ProjectManager
 
 # Inicialização dos serviços
 def initialize_services():

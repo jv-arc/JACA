@@ -2,7 +2,7 @@ import google.generativeai as genai
 import json
 from typing import Dict, Optional
 
-from src.config import Settings
+from app.core.config import Settings
 
 #===========================================================================
 # CLASSE: GeminiClient

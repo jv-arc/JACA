@@ -35,10 +35,10 @@ cp "$config_file" "$backup_file"
 jq --arg key "$apikey" '.apikey = $key' "$backup_file" > "$config_file"
 
 
-if [[ -f ./app/streamlit/Home.py ]]; then
-    python3 ./app/streamlit/Home.py
+if [[ -f ./app/ui/Home.py ]]; then
+    python3 ./app/ui/Home.py
 else
-    echo "Error: Test entrypoint './app/streamlit/Home.py' not found." >&2
+    echo "Error: Test entrypoint './app/ui/Home.py' not found." >&2
     exit 1
 fi
 

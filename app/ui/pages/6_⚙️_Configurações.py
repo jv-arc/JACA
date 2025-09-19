@@ -1,5 +1,5 @@
 import streamlit as st
-from src.config import Settings
+from app.core.config import Settings
 
 # Inicializa configurações
 settings = Settings()

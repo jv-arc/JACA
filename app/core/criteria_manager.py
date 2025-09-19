@@ -1,10 +1,10 @@
 import json
 from typing import List, Dict, Optional
 
-from src.ai_client import GeminiClient
-from src.prompt_manager import PromptManager
-from src.logger import Logger
-from src.models import ProjectState
+from app.core.ai_client import GeminiClient
+from app.core.prompt_manager import PromptManager
+from app.core.logger import Logger
+from app.core.models import ProjectState
 
 class CriteriaManager:
     """

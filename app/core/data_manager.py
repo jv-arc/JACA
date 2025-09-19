@@ -6,10 +6,10 @@ from PIL import Image
 from datetime import datetime
 from typing import Optional, Dict, List
 
-from src.ai_client import GeminiClient
-from src.prompt_manager import PromptManager
-from src.logger import Logger
-from src.models import StructuredExtraction
+from app.core.ai_client import GeminiClient
+from app.core.prompt_manager import PromptManager
+from app.core.logger import Logger
+from app.core.models import StructuredExtraction
 
 class ExtractedDataManager:
     """

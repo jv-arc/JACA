@@ -4,18 +4,13 @@ import platform
 import subprocess
 from typing import List, Dict, Any
 
-import sys
-from pathlib import Path
-
-parent_dir = Path(__file__)
-
-from src.callouts import Callouts
-from src.config import Settings
-from src.prompt_manager import PromptManager
-from src.ai_client import GeminiClient
-from src.data_manager import ExtractedDataManager
-from src.project_manager import ProjectManager
-from src.logger import Logger
+from app.ui.callouts import Callouts
+from app.core.config import Settings
+from app.core.prompt_manager import PromptManager
+from app.core.ai_client import GeminiClient
+from app.core.data_manager import ExtractedDataManager
+from app.core.project_manager import ProjectManager
+from app.core.logger import Logger
 
 # Garante que este bloco execute apenas uma vez por sessão
 @st.cacheresource

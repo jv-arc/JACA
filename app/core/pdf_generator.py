@@ -2,8 +2,8 @@ import os
 from datetime import datetime
 from typing import Dict, List, Optional, Any
 from fpdf import FPDF, XPos, YPos
-from src.logger import Logger
-from src.models import ProjectState
+from app.core.logger import Logger
+from app.core.models import ProjectState
 
 class DataResolver:
     """

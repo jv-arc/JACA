@@ -1,5 +1,5 @@
 import streamlit as st
-from src.project_manager import ProjectManager
+from app.core.project_manager import ProjectManager
 
 # Página de Verificação de Critérios
 

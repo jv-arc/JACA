@@ -1,9 +1,9 @@
 import os
 import fitz  # PyMuPDF
 from typing import Dict, Optional
-from src.logger import Logger
-from src.pdf_generator import PdfGenerator
-from src.report_config_manager import ReportConfigManager
+from app.core.logger import Logger
+from app.core.pdf_generator import PdfGenerator
+from app.core.report_config_manager import ReportConfigManager
 
 
 class ExportManager:

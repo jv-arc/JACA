@@ -5,12 +5,12 @@ from datetime import datetime
 from typing import List, Optional, Dict
 
 
-from src.report_config_manager import ReportConfigManager
-from src.models import ProjectState, ExtractedDataType
-from src.data_manager import ExtractedDataManager
-from src.criteria_manager import CriteriaManager
-from src.export_manager import ExportManager
-from src.logger import Logger
+from app.core.report_config_manager import ReportConfigManager
+from app.core.models import ProjectState, ExtractedDataType
+from app.core.data_manager import ExtractedDataManager
+from app.core.criteria_manager import CriteriaManager
+from app.core.export_manager import ExportManager
+from app.core.logger import Logger
 
 
 class ProjectManager:

@@ -1,7 +1,7 @@
 import json
 from typing import Dict, List, Optional
 
-from src.logger import Logger
+from app.core.logger import Logger
 
 class ReportConfigManager:
     """
