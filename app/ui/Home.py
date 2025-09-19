@@ -2,8 +2,12 @@ import streamlit as st
 import os
 import platform
 import subprocess
-from pathlib import Path
 from typing import List, Dict, Any
+
+import sys
+from pathlib import Path
+
+parent_dir = Path(__file__)
 
 from src.callouts import Callouts
 from src.config import Settings
