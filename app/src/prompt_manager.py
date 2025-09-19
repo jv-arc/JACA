@@ -1,9 +1,24 @@
 from typing import List
 
+
+#===========================================================================
+# CLASS: PromptManager
+#---------------------------------------------------------------------------
+# Gerencia e formata prompts para uso pela IA
+#===========================================================================
 class PromptManager:
-    """
-    Gerencia a criação e formatação de prompts para a IA.
-    """
+    
+
+
+
+
+    #---------------------------------------------------------------------------------
+    # Obtem o Prompt de extracao de conteudo
+    #---------------------------------------------------------------------------------
+    # Recebe a categoria em questão, o texto do qual queremos extrair dados,
+    # os campos a serem extraídos e os campos a serem ignorados.
+    # Retorna o prompt formatado pronto para o envio.
+    #---------------------------------------------------------------------------------
     def get_extraction_prompt(
         self, 
         category: str, 
@@ -11,18 +26,7 @@ class PromptManager:
         content_fields: List[str], 
         ignored_fields: List[str]
     ) -> str:
-        """
-        Cria um prompt detalhado para extração estruturada de dados.
-
-        Args:
-            category (str): A categoria do documento (ex: 'estatuto').
-            document_text (str): O texto completo extraído do documento.
-            content_fields (List[str]): Lista de campos de conteúdo a serem extraídos.
-            ignored_fields (List[str]): Lista de campos de ruído a serem extraídos e ignorados.
-
-        Returns:
-            str: O prompt formatado pronto para ser enviado à IA.
-        """
+        
         prompt_template = f"""
 **Contexto:** Você é um assistente de IA especialista em análise de documentos jurídicos e administrativos. Sua tarefa é extrair informações de forma precisa e estruturada.
 

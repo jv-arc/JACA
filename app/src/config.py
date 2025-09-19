@@ -2,7 +2,7 @@ import os
 import json
 
 
-CONFIG_PATH = 'src/config/config.json'
+CONFIG_PATH = '../config/config.json'
 
 class Settings:
 
