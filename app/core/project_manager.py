@@ -9,13 +9,15 @@ from app.core.criteria_manager import CriteriaManager
 from app.core.data_manager import ExtractedDataManager
 from app.core.logger import Logger
 from app.core.export_manager import ExportManager
+from app.core.report_config_manager import ReportConfigManager
 
 class ProjectManager:
     def __init__(
         self, 
         export_manager: ExportManager, 
         extraction_manager: ExtractedDataManager, 
-        logger: Logger, 
+        logger: Logger,
+        report_config_manager: ReportConfigManager,
         criteria_manager: CriteriaManager, 
         projects_dir='data/projects'
     ):
@@ -24,6 +26,7 @@ class ProjectManager:
         self.extraction_manager = extraction_manager
         self.criteria_manager = criteria_manager
         self.export_manager = export_manager
+        self.report_config_manager = report_config_manager
         self.logger = logger
         os.makedirs(self.projects_dir, exist_ok=True)
         self.logger.info("self inicializada.")
@@ -419,7 +422,7 @@ class ProjectManager:
             self.logger.warning(f"Nenhum arquivo para extrair na categoria '{category}'.")
             return False
 
-        extracted_data = self.extraction_manager.extract_data_from_files(file_paths, category)
+        extracted_data = self.extraction_manager.run_extraction(file_paths, category)
         
         if not extracted_data:
             self.logger.error(f"O processo de extração para '{category}' não retornou dados.")
@@ -569,3 +572,260 @@ class ProjectManager:
        except Exception as e:
            self.logger.error(f"Falha no teste de conexão da API: {e}")
            return (False, f"Falha na conexão: {e}")
+       
+
+    def get_pending_information(self, project_name: str) -> Dict[str, List[str]]:
+        """
+        Verifica todos os dados extraídos de um projeto em busca de campos
+        marcados como não encontrados pela IA.
+
+        Args:
+            project_name (str): O nome do projeto a ser verificado.
+
+        Returns:
+            Dict[str, List[str]]: Um dicionário onde as chaves são as categorias
+                                  de documentos e os valores são listas de campos
+                                  com informações pendentes.
+                                  Ex: {'estatuto': ['cnpj'], 'ata': ['meeting_date']}
+        """
+        self.logger.info(f"Iniciando verificação de informações pendentes para o projeto '{project_name}'.")
+        
+        pending_info: Dict[str, List[str]] = {}
+        PENDING_TOKEN = "[NAO_ENCONTRADO]"
+
+        project_data = self.load_project(project_name)
+
+        if not project_data or not project_data.extracted_data:
+            self.logger.warning(f"Não há dados extraídos para verificar no projeto '{project_name}'.")
+            return pending_info
+
+        # Lista das categorias que possuem dados estruturados
+        categories_to_check = ['estatuto', 'ata', 'licenca', 'programacao']
+
+        for category in categories_to_check:
+            category_data = getattr(project_data.extracted_data, category, None)
+            
+            # Verifica se a categoria tem dados e se possui o atributo 'content_fields'
+            if category_data and hasattr(category_data, 'content_fields'):
+                content_fields = category_data.content_fields
+                if not content_fields:
+                    continue
+
+                for field_name, value in content_fields.items():
+                    # Verifica se o valor corresponde exatamente ao nosso token de pendência
+                    if isinstance(value, str) and value.strip() == PENDING_TOKEN:
+                        # Se a categoria ainda não está no dicionário, cria a lista
+                        if category not in pending_info:
+                            pending_info[category] = []
+                        pending_info[category].append(field_name)
+
+        if pending_info:
+            self.logger.info(f"Verificação concluída. Encontrados campos pendentes: {pending_info}")
+        else:
+            self.logger.info("Verificação concluída. Nenhuma informação pendente foi encontrada.")
+            
+        return pending_info
+    
+
+    def run_secondary_extraction(self, project_name: str, category: str) -> bool:
+        """
+        Usa o consolidated_text revisado para extrair campos específicos
+        necessários para o relatório de exportação.
+        """
+        self.logger.info(f"Iniciando extração secundária para '{category}' no projeto '{project_name}'.")
+        
+        try:
+            # 1. Carrega os dados necessários
+            project_data = self.load_project(project_name)
+            report_config = self.get_report_configuration()
+            
+            doc_data = getattr(project_data.extracted_data, category, None)
+            if not doc_data or not doc_data.consolidated_text:
+                self.logger.error("Texto consolidado não encontrado para a extração secundária.")
+                return False
+
+            # 2. Descobre quais campos o relatório precisa desta categoria de documento
+            fields_to_extract = []
+            for table in report_config.get('tables', []):
+                for field in table.get('fields', []):
+                    data_key = field.get('data_key', '')
+                    if field.get('source') == 'extracted' and data_key.startswith(category):
+                        field_name = data_key.split('.')[-1]
+                        fields_to_extract.append(field_name)
+            
+            if not fields_to_extract:
+                self.logger.info(f"Nenhum campo secundário a ser extraído para a categoria '{category}'.")
+                return True
+
+            # 3. Monta o prompt e chama a IA para extrair os campos
+            prompt_instruction = self.extraction_manager.prompt_manager.get_secondary_extraction_prompt(fields_to_extract)
+            full_prompt = f"{prompt_instruction}\n\n--- TEXTO PARA ANÁLISE ---\n{doc_data.consolidated_text}"
+            
+            extracted_fields = self.extraction_manager.gemini_client.generate_json_from_prompt(
+                full_prompt, self.extraction_manager.gemini_client.settings.extraction_model
+            )
+
+            if not extracted_fields:
+                self.logger.error("A extração secundária não retornou um JSON válido.")
+                return False
+
+            # 4. Atualiza os content_fields com os novos dados e salva o projeto
+            if not hasattr(doc_data, 'content_fields') or doc_data.content_fields is None:
+                doc_data.content_fields = {}
+            
+            doc_data.content_fields.update(extracted_fields)
+            
+            return self.save_project(project_data)
+    
+        except Exception as e:
+            self.logger.error(f"Falha crítica na extração secundária: {e}", exc_info=True)
+            return False
+    
+    
+    def get_report_configuration(self) -> Dict:
+        """
+        Retorna a configuração completa do relatório para a UI montar o formulário.
+        """
+        self.logger.info("Buscando configuração de relatório para a UI.")
+        # Delega a chamada para o manager correto
+        return self.report_config_manager.get_full_config()
+    
+    def get_draft_document_path(self, project_name: str) -> Optional[str]:
+        """Verifica se o rascunho para assinatura já existe e retorna seu caminho."""
+        draft_path = os.path.join(self.project_exports_dir(project_name), f"RASCUNHO_REQUISICAO_{project_name}.pdf")
+        return draft_path if os.path.exists(draft_path) else None
+    
+    def get_signed_document_path(self, project_name: str) -> Optional[str]:
+        """Verifica se o documento assinado já foi enviado e retorna seu caminho."""
+        # Usamos um nome de arquivo padrão para facilitar a localização
+        signed_path = os.path.join(self.project_files_dir(project_name), "requerimento_assinado.pdf")
+        return signed_path if os.path.exists(signed_path) else None
+
+    def generate_draft_for_signature(self, project_name: str, user_overrides: Dict) -> Optional[str]:
+        """ETAPA 1: Gera apenas o PDF do formulário para o usuário obter as assinaturas."""
+        self.logger.info(f"Gerando rascunho para assinatura para o projeto '{project_name}'.")
+        project_data = self.load_project(project_name)
+        if not project_data: return None
+
+        draft_path = os.path.join(self.project_exports_dir(project_name), f"RASCUNHO_REQUISICAO_{project_name}.pdf")
+        report_config = self.get_report_configuration()
+
+        success = self.export_manager.pdf_generator.create_request_pdf(
+            project_data=project_data,
+            report_config=report_config,
+            user_overrides=user_overrides,
+            output_path=draft_path
+        )
+        return draft_path if success else None
+    
+    def upload_signed_document(self, project_name: str, uploaded_file) -> bool:
+        """ETAPA 2: Salva o documento assinado que o usuário enviou."""
+        self.logger.info(f"Recebendo documento assinado para o projeto '{project_name}'.")
+        save_path = self.get_signed_document_path(project_name) # Pega o caminho padrão
+        try:
+            with open(save_path, "wb") as f:
+                f.write(uploaded_file.getbuffer())
+            self.logger.info(f"Documento assinado salvo em: {save_path}")
+            return True
+        except Exception as e:
+            self.logger.error(f"Erro ao salvar documento assinado: {e}")
+            return False
+            
+    def assemble_final_package(self, project_name: str) -> Optional[str]:
+        """ETAPA 3: Une o documento assinado com todos os outros anexos do projeto."""
+        self.logger.info(f"Montando pacote final para o projeto '{project_name}'.")
+        
+        signed_doc_path = self.get_signed_document_path(project_name)
+        project_data = self.load_project(project_name)
+        
+        if not signed_doc_path or not project_data:
+            self.logger.error("Documento assinado ou dados do projeto não encontrados para a montagem final.")
+            return None
+        final_pdf_path = os.path.join(self.project_exports_dir(project_name), f"PACOTE_FINAL_{project_name}.pdf")
+    
+        try:
+            source_pdfs = []
+            for files in project_data.base_files.values():
+                source_pdfs.extend(f for f in files if f.lower().endswith('.pdf'))
+            
+            self.logger.info(f"Concatenando {len(source_pdfs) + 1} PDFs...")
+            final_doc = fitz.open()
+            
+            # 1. Adiciona o requerimento assinado primeiro
+            final_doc.insert_pdf(fitz.open(signed_doc_path))
+            
+            # 2. Adiciona os outros documentos
+            for pdf_path in source_pdfs:
+                if os.path.exists(pdf_path):
+                    final_doc.insert_pdf(fitz.open(pdf_path))
+            
+            final_doc.save(final_pdf_path)
+            final_doc.close()
+            
+            self.logger.info(f"Pacote final montado com sucesso em: {final_pdf_path}")
+            return final_pdf_path
+        except Exception as e:
+            self.logger.error(f"Falha ao concatenar os PDFs: {e}", exc_info=True)
+            return None
+        
+    def delete_export_files(self, project_name: str) -> bool:
+        """Apaga todos os arquivos gerados (rascunho e assinado) para recomeçar o processo."""
+        self.logger.info(f"Resetando o processo de exportação para '{project_name}'.")
+        draft_path = self.get_draft_document_path(project_name)
+        signed_path = self.get_signed_document_path(project_name)
+        try:
+            if draft_path and os.path.exists(draft_path):
+                os.remove(draft_path)
+            if signed_path and os.path.exists(signed_path):
+                os.remove(signed_path)
+            return True
+        except Exception as e:
+            self.logger.error(f"Erro ao deletar arquivos de exportação: {e}")
+            return False
+            
+    def get_report_configuration(self) -> Dict:
+        """
+        Retorna a configuração completa do relatório para a UI montar o formulário.
+        Delega a chamada para o ReportConfigManager.
+        """
+        self.logger.info("Buscando configuração de relatório para a UI.")
+        # Retornamos uma cópia para evitar modificações acidentais no objeto em memória
+        return self.report_config_manager.get_full_config().copy()
+    
+
+    def update_director_list(self, project_name: str, new_director_list: List[Dict]) -> bool:
+        """
+        Atualiza especificamente a lista de dirigentes nos dados extraídos da ata.
+
+        Args:
+            project_name (str): O nome do projeto.
+            new_director_list (List[Dict]): A nova lista de dirigentes (editada pelo usuário).
+
+        Returns:
+            bool: True se a atualização for bem-sucedida.
+        """
+        self.logger.info(f"Atualizando a lista de dirigentes para o projeto '{project_name}'.")
+        
+        project_data = self.load_project(project_name)
+        if not project_data or not project_data.extracted_data.ata:
+            self.logger.error("Não foi possível carregar os dados da ata para atualizar a lista de dirigentes.")
+            return False
+
+        # Garante que o dicionário de campos existe
+        if not hasattr(project_data.extracted_data.ata, 'content_fields') or project_data.extracted_data.ata.content_fields is None:
+            project_data.extracted_data.ata.content_fields = {}
+
+        # Atualiza a chave específica com a lista fornecida pela UI
+        project_data.extracted_data.ata.content_fields['lista_dirigentes_eleitos'] = new_director_list
+        
+        # Salva o objeto do projeto inteiro com a lista atualizada
+        return self.save_project(project_data)
+    
+    def get_report_configuration(self) -> Dict:
+        """
+        Retorna a configuração completa do relatório para a UI montar o formulário.
+        Delega a chamada para o ReportConfigManager.
+        """
+        self.logger.info("Buscando configuração de relatório para a UI.")
+        # Retornamos uma cópia para evitar modificações acidentais no objeto em memória
+        return self.report_config_manager.get_full_config().copy()
