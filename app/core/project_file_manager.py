@@ -33,7 +33,7 @@ class ProjectFileManager:
             directory_path.mkdir(parents=True, exist_ok=True)
             return True
         except (OSError, PermissionError) as e:
-            self.logger.error(f"Falha ao criar diretorio: {directory_path}", e)
+            self.logger.error(f"Falha ao criar diretorio: {directory_path} \n {e}")
             return False
 
     # verifica que arquivo existe
@@ -69,7 +69,7 @@ class ProjectFileManager:
             return sorted(projects)
 
         except (OSError, PermissionError) as e:
-            self.logger.error("Falha ao listar projetos", e)
+            self.logger.error(f"Falha ao listar projetos \n {e}")
             return []
 
     # valida estrutura de projeto
@@ -105,7 +105,7 @@ class ProjectFileManager:
             return True
 
         except Exception as e:
-            self.logger.error(f"Falha ao criar a estrutura do projeto: {project_name}", e)
+            self.logger.error(f"Falha ao criar a estrutura do projeto: {project_name} \n {e}", )
             return False
 
 
@@ -132,7 +132,7 @@ class ProjectFileManager:
             return True
 
         except (OSError, PermissionError) as e:
-            self.logger.error(f"Falha ao apagar o projeto {project_name}", e)
+            self.logger.error(f"Falha ao apagar o projeto {project_name} \n {e}")
             return False
 
 
@@ -151,7 +151,7 @@ class ProjectFileManager:
             return True
 
         except (OSError) as e:
-            self.logger.error(f"Falha ao salvar no arquivo {file_path}", e)
+            self.logger.error(f"Falha ao salvar no arquivo {file_path} \n {e}")
             return False
 
 
@@ -166,7 +166,7 @@ class ProjectFileManager:
                 return json.load(f)
 
         except (OSError, json.JSONDecodeError) as e:
-            self.logger.error(f"Falha ao carregar arquivo: {file_path}", {e})
+            self.logger.error(f"Falha ao carregar arquivo: {file_path} \n {e}" )
             return None
 
     # carrega dados do arquivo JSON com metadados do projeto
@@ -316,7 +316,7 @@ class ProjectFileManager:
             return file_path
 
         except (OSError, PermissionError) as e:
-            self.logger.error(f"Falha ao salvar arquivo {filename} para projeto: {project_name}", e)
+            self.logger.error(f"Falha ao salvar arquivo {filename} para projeto: {project_name} \n {e}")
             return None
 
     # apaga arquivo do usuario
@@ -471,7 +471,7 @@ class ProjectFileManager:
             return total_size
 
         except (OSError, PermissionError) as e:
-            self.logger.error(f"Falha ao calcular tamanho do projeto {project_name}", e)
+            self.logger.error(f"Falha ao calcular tamanho do projeto {project_name}, {e}")
             return None
 
 
