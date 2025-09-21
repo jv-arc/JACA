@@ -1,139 +1,146 @@
 import streamlit as st
-from app.core.config import Settings
+import json
 
-# Inicializa configurações
-settings = Settings()
+# ==============================================================================
+# 1. INICIALIZAÇÃO E VERIFICAÇÃO DE ESTADO
+# ==============================================================================
 
-# Configuração da página
-st.set_page_config(page_title="Configurações Gerais", page_icon="⚙️", layout="wide")
-st.title("Configurações Gerais")
+st.set_page_config(page_title="Configurações", page_icon="⚙️", layout="wide")
+st.title("⚙️ Configurações Gerais")
 
-# Verifica serviços
-projectmanager = st.session_state.get("projectmanager")
-uilogger = st.session_state.get("uilogger")
-if not projectmanager or not uilogger:
-    st.error("Serviços não inicializados. Por favor, volte para a página Home.")
+# Carrega os serviços da sessão
+project_manager = st.session_state.get('project_manager')
+ui_logger = st.session_state.get('ui_logger')
+
+if not all([project_manager, ui_logger]):
+    st.error("⚠️ Serviços não inicializados. Por favor, volte para a página Home.")
     st.stop()
 
+# Importa a classe Settings aqui para evitar importação circular no topo
+from src.config.settings import Settings
+settings = Settings()
+
+# ==============================================================================
+# 2. FUNÇÕES DE RENDERIZAÇÃO DA UI
+# ==============================================================================
+
 def render_api_section():
-    st.subheader("Chave de API do Google Gemini")
+    """Renderiza a seção para configurar a chave de API do Google."""
+    st.subheader("🔑 Chave de API do Google Gemini")
     st.caption(
-        "Sua chave de API necessária para todas as funcionalidades de IA. "
-        "Ela é salva localmente em src/config/config.json e no armazenamento compartilhado."
+        "Sua chave de API é necessária para todas as funcionalidades de IA. "
+        "Ela é salva localmente no arquivo `src/config/config.json` e não é compartilhada."
     )
-    current_key = settings.apikey
+
+    current_key = settings.api_key
     new_key = st.text_input(
         "Sua Chave de API",
         value=current_key,
         type="password",
         help="Obtenha sua chave no Google AI Studio."
     )
+
     col1, col2 = st.columns(2)
     with col1:
-        if st.button(
-            "Salvar Chave de API",
-            type="primary",
-            use_container_width=True,
-            disabled=(new_key == current_key)
-        ):
-            settings.updateapikey(new_key)
+        if st.button("💾 Salvar Chave de API", type="primary", use_container_width=True, disabled=new_key == current_key):
+            settings.update_api_key(new_key)
             st.success("Chave de API salva com sucesso! A aplicação irá recarregar para usar a nova chave.")
             st.info("Pode ser necessário reiniciar o Streamlit para que as alterações tenham efeito completo.")
-            st.experimental_rerun()
+            st.rerun()
+
     with col2:
-        if st.button("Testar Conexão", use_container_width=True, disabled=(not current_key)):
+        if st.button("🧪 Testar Conexão", use_container_width=True, disabled=not current_key):
             with st.spinner("Testando conexão com a API..."):
-                success, message = projectmanager.testapiconnection()
-                if success:
-                    st.success(message)
-                else:
-                    st.error(message)
+                success, message = project_manager.test_api_connection()
+            if success:
+                st.success(f"✅ {message}")
+            else:
+                st.error(f"❌ {message}")
 
 def render_defaults_section():
-    st.subheader("Padrões do Relatório de Requisição")
-    st.caption(
-        "Edite os valores padrão que serão usados ao gerar um novo relatório de requisição. "
-        "Essas alterações serão salvas para todos os projetos."
-    )
-    reportconfig = projectmanager.getreportconfiguration()
+    """Renderiza a seção para editar os valores padrão do relatório."""
+    st.subheader("📝 Padrões do Relatório de Requisição")
+    st.caption("Edite os valores padrão que serão usados ao gerar um novo relatório de requisição. Essas alterações serão salvas para todos os projetos.")
+
+    report_config = project_manager.get_report_configuration()
+    
     with st.form("defaults_form"):
-        newconfig = reportconfig.copy()
-        for table in newconfig.gettables():
-            with st.container():
-                st.markdown(f"### {table.getheader()}")
-                for field in table.getfields():
-                    if field.getsource() == "userinput":
-                        fid = field.getid()
-                        val = st.text_input(
-                            field.getlabel(),
-                            value=field.getdefault(),
-                            key=f"default_{fid}"
+        new_config = report_config.copy()
+        
+        # Itera sobre as tabelas para encontrar os campos de 'user_input'
+        for table in new_config.get('tables', []):
+            with st.container(border=True):
+                st.markdown(f"**{table['header']}**")
+                for field in table.get('fields', []):
+                    if field.get('source') == 'user_input':
+                        field_id = field['id']
+                        # Atualiza o valor no dicionário com o que o usuário digitar
+                        field['default'] = st.text_input(
+                            label=field['label'],
+                            value=field.get('default', ''),
+                            key=f"default_{field_id}"
                         )
-                        newconfig.updatefielddefault(fid, val)
-        submitted = st.form_submit_button(
-            "Salvar Padrões do Relatório",
-            type="primary",
-            use_container_width=True
-        )
+        
+        submitted = st.form_submit_button("Salvar Padrões do Relatório", type="primary", use_container_width=True)
         if submitted:
-            if projectmanager.savereportconfiguration(newconfig):
+            if project_manager.save_report_configuration(new_config):
                 st.success("Valores padrão do relatório salvos com sucesso!")
             else:
                 st.error("Ocorreu um erro ao salvar a configuração.")
 
 def render_advanced_section():
-    with st.expander("Configurações Avançadas"):
-        # Modelos de IA
-        st.markdown("### Modelos de IA")
+    """Renderiza a seção de configurações avançadas em um expansor."""
+    with st.expander("🔧 Configurações Avançadas"):
+        # --- Modelos de IA ---
+        st.markdown("**Modelos de IA**")
         st.caption("Selecione os modelos Gemini a serem usados para diferentes tarefas.")
-        models = ["gemini-1.5-flash", "gemini-1.5-pro", "gemini-1.0-pro"]
+        
         col1, col2 = st.columns(2)
         with col1:
             extraction_model = st.selectbox(
                 "Modelo para Extração de Dados",
-                options=models,
-                index=models.index(settings.extractionmodel)
+                options=["gemini-1.5-flash", "gemini-1.5-pro", "gemini-1.0-pro"],
+                index=["gemini-1.5-flash", "gemini-1.5-pro", "gemini-1.0-pro"].index(settings.extraction_model or "gemini-1.5-flash")
             )
         with col2:
             criteria_model = st.selectbox(
                 "Modelo para Análise de Critérios",
-                options=models,
-                index=models.index(settings.criteriamodel)
+                options=["gemini-1.5-flash", "gemini-1.5-pro", "gemini-1.0-pro"],
+                index=["gemini-1.5-flash", "gemini-1.5-pro", "gemini-1.0-pro"].index(settings.criteria_model or "gemini-1.5-flash")
             )
+
         if st.button("Salvar Modelos de IA"):
-            settings.updateextractionmodel(extraction_model)
-            settings.updatecriteriamodel(criteria_model)
+            settings.update_extraction_model(extraction_model)
+            settings.update_criteria_model(criteria_model)
             st.success("Modelos de IA atualizados!")
+
         st.divider()
 
-        # Banco de Critérios
-        st.markdown("### Banco de Dados de Critérios")
-        st.caption(
-            "Abaixo está o conteúdo do arquivo src/criteria/criteriadatabase.json. "
-            "Para editar, altere o arquivo diretamente e recarregue a aplicação."
-        )
+        # --- Banco de Critérios ---
+        st.markdown("**Banco de Dados de Critérios**")
+        st.caption(f"Abaixo está o conteúdo do arquivo `src/criteria/criteria_database.json`. Para editar, altere o arquivo diretamente e recarregue a aplicação.")
+        
         try:
-            import json
-            with open("src/criteria/criteriadatabase.json", "r", encoding="utf-8") as f:
-                criteriacontent = json.load(f)
-            st.json(criteriacontent, expanded=False)
+            with open("src/criteria/criteria_database.json", "r", encoding="utf-8") as f:
+                criteria_content = json.load(f)
+            st.json(criteria_content, expanded=False)
         except Exception as e:
             st.error(f"Não foi possível carregar o arquivo de critérios: {e}")
+        
         st.divider()
 
-        # Modo Debug
-        st.markdown("### Modo de Depuração")
-        debug_mode = st.checkbox(
-            "Habilitar modo de depuração",
-            value=settings.debugmode,
-            help="Mostra logs mais detalhados no console para solução de problemas."
-        )
-        if debug_mode != settings.debugmode:
-            settings.updatedebugmode(debug_mode)
+        # --- Modo Debug ---
+        st.markdown("**Modo de Depuração (Logging)**")
+        debug_mode = st.checkbox("Habilitar modo de depuração", value=settings.debug_mode, help="Mostra logs mais detalhados no console para solução de problemas.")
+        if debug_mode != settings.debug_mode:
+            settings.update_debug_mode(debug_mode)
             st.success(f"Modo de depuração {'ativado' if debug_mode else 'desativado'}.")
-            st.experimental_rerun()
+            st.rerun()
 
-# Renderização principal
+# ==============================================================================
+# 3. RENDERIZAÇÃO PRINCIPAL DA PÁGINA
+# ==============================================================================
+
 render_api_section()
 st.divider()
 render_defaults_section()

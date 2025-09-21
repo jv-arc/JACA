@@ -1,103 +1,89 @@
 {
-  "prompt": "Extraia os seguintes campos de qualificação e localização para preenchimento no PDF de requisição",
-  "sections": [
+  "request_title": "REQUERIMENTO DE OUTORGA PARA O SERVIÇO DE RADIODIFUSÃO COMUNITÁRIA",
+  "tables": [
     {
-      "header": "QUALIFICAO DA ENTIDADE",
+      "header": "QUALIFICAÇÃO DA ENTIDADE",
       "fields": [
         {
           "label": "Razão Social da Entidade",
           "source": "extracted",
-          "datakey": "estatuto.maincontent.razaosocial",
+          "data_key": "estatuto.main_content.razao_social",
           "default": "Não encontrado nos documentos"
         },
         {
           "label": "Nome Fantasia",
-          "source": "userinput",
-          "id": "nomefantasia",
+          "source": "user_input",
+          "id": "nome_fantasia",
           "default": "Rádio Comunitária Exemplo"
         },
         {
           "label": "CNPJ",
           "source": "extracted",
-          "datakey": "estatuto.maincontent.cnpj",
+          "data_key": "estatuto.main_content.cnpj",
           "default": "Não encontrado nos documentos"
         },
         {
           "label": "Endereço da Sede",
           "source": "extracted",
-          "datakey": "estatuto.maincontent.enderecosede",
+          "data_key": "estatuto.main_content.endereco_sede",
           "default": "Não encontrado nos documentos"
         },
         {
-          "label": "Município/UF",
+          "label": "Representante Legal (Presidente)",
           "source": "extracted",
-          "datakey": "estatuto.maincontent.municipiouf",
-          "default": "Não encontrado nos documentos"
-        },
-        {
-          "label": "CEP",
-          "source": "extracted",
-          "datakey": "estatuto.maincontent.cep",
-          "default": "Não encontrado nos documentos"
-        },
-        {
-          "label": "Representante Legal / Presidente",
-          "source": "extracted",
-          "datakey": "ata.decisions.presidenteeleito",
+          "data_key": "ata.decisions.presidente_eleito",
           "default": "Não encontrado na ata"
         }
       ]
     },
     {
-      "header": "LOCALIZACAO DE INSTALACAO DO SISTEMA IRRADIANTE",
+      "header": "LOCALIZAÇÃO DE INSTALAÇÃO DO SISTEMA IRRADIANTE",
       "fields": [
         {
           "label": "Endereço de Instalação",
-          "source": "userinput",
-          "id": "enderecotransmissor",
+          "source": "user_input",
+          "id": "endereco_transmissor",
           "default": "Rua da Antena, 123"
         },
         {
           "label": "Bairro",
-          "source": "userinput",
-          "id": "bairrotransmissor",
+          "source": "user_input",
+          "id": "bairro_transmissor",
           "default": "Centro"
         },
         {
           "label": "Município/UF",
-          "source": "userinput",
-          "id": "municipiotransmissor",
+          "source": "user_input",
+          "id": "municipio_transmissor",
           "default": "São Paulo/SP"
         },
         {
           "label": "CEP",
-          "source": "userinput",
-          "id": "ceptransmissor",
+          "source": "user_input",
+          "id": "cep_transmissor",
           "default": "01000-000"
         },
         {
           "label": "Latitude (graus decimais)",
-          "source": "userinput",
+          "source": "user_input",
           "id": "latitude",
           "default": "-23.550520"
         },
         {
           "label": "Longitude (graus decimais)",
-          "source": "userinput",
+          "source": "user_input",
           "id": "longitude",
           "default": "-46.633308"
         }
       ]
     }
   ],
-  "boilerplatetext": "A entidade acima qualificada, por seu representante legal, vem respeitosamente à presença de Vossa Excelência requerer a outorga para executar o Serviço de Radiodifusão Comunitária, nos termos da Lei nº 9.612/98 e do Decreto nº 2.615/98, declarando, para tanto, que se submete integralmente às normas que regem a matéria e que os equipamentos a serem instalados obedecerão às normas técnicas vigentes.",
-  "finaldeclaration": {
+  "boilerplate_text": "A entidade acima qualificada, por seu representante legal, vem respeitosamente à presença de Vossa Excelência requerer a outorga para executar o Serviço de Radiodifusão Comunitária, nos termos da Lei nº 9.612/98 e do Decreto nº 2.615/98, declarando, para tanto, que se submete integralmente às normas que regem a matéria e que os equipamentos a serem instalados obedecerão às normas técnicas vigentes.",
+  "final_declaration": {
     "header": "TERMOS DE DECLARAÇÃO",
     "text": "Declaro, sob as penas da lei, que as informações aqui prestadas são a expressão da verdade e que a entidade não se encontra impedida de participar do presente processo de seleção.",
-    "signaturelocationdate": "cidaderequerimento, dataatual",
-    "signatureline1": "nomerepresentantelegal",
-    "signatureline2": "nometecnicoresponsavel",
-    "createcnico": "Análise da Estrutura"
-  },
-  "tables": []
+    "signature_location_date": "{cidade_requerimento}, {data_atual}",
+    "signature_line_1": "________________________________________\n{nome_representante_legal}\nRepresentante Legal",
+    "signature_line_2": "________________________________________\n{nome_tecnico_responsavel}\nTécnico Responsável\nCREA/CFT: {crea_tecnico}"
+  }
 }

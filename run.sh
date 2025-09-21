@@ -32,7 +32,7 @@ trap cleanup EXIT
 
 cp "$config_file" "$backup_file"
 
-jq --arg key "$apikey" '.apikey = $key' "$backup_file" > "$config_file"
+jq --arg key "$api_key" '.api_key = $key' "$backup_file" > "$config_file"
 
 
 if [[ -f ./app/ui/Home.py ]]; then

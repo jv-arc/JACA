@@ -1,6 +1,6 @@
 {
-  "apikey": null,
-  "extractionmodel": "gemini-2.5-Flash",
-  "criteriamodel": "gemini-2.0-flash",
-  "debugmode": false
+  "api_key": "AIzaSyCh5rznL6ZERnxsTQclaxIp4shDoBWOGjk",
+  "extraction_model": "gemini-2.5-Flash",
+  "criteria_model": "gemini-2.0-flash",
+  "debug_mode": false
 }

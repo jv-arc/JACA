@@ -1,31 +1,39 @@
 [
   {
-    "id": "ESTATUTO01",
+    "id": "ESTATUTO_01",
     "title": "Finalidade Não Lucrativa",
-    "description": "Verifica se o estatuto da organização declara explicitamente que ela não possui fins lucrativos.",
-    "category": "conteudo",
-    "sourcedocuments": ["estatuto"],
-    "relevantfields": ["objectives", "maincontent", "bylawstext"],
-    "promptinstruction": "Analise o texto do estatuto fornecido. O texto afirma de forma inequívoca que a organização sem fins lucrativos ou não visa lucro? Responda em JSON com os campos status (Conforme, Não Conforme ou Inconclusivo) e justificativa com o trecho do texto que comprova sua análise.",
-    "errormessage": "O estatuto não deixa claro que a organização sem fins lucrativos."
+    "description": "Verifica se o estatuto da organização declara explicitamente que ela não possui fins lucrativos, um requisito essencial para rádios comunitárias.",
+    "category": "conteúdo",
+    "source_documents": ["estatuto"],
+    "relevant_fields": {
+      "estatuto": ["objectives", "main_content", "bylaws_text"]
+    },
+    "prompt_instruction": "Analise o texto do estatuto fornecido. O texto afirma de forma inequívoca que a associação é 'sem fins lucrativos' ou 'não visa lucro'? Responda em JSON com os campos 'status' ('Conforme', 'Não Conforme' ou 'Inconclusivo') e 'justificativa' (o trecho do texto que comprova sua análise).",
+    "error_message": "O estatuto não deixa claro que a organização é sem fins lucrativos. É crucial que essa informação seja explícita."
   },
   {
-    "id": "ESTATUTO02",
+    "id": "ESTATUTO_02",
     "title": "Duração do Mandato da Diretoria",
     "description": "Verifica se o mandato da diretoria, conforme definido no estatuto, não excede o limite de 4 anos.",
     "category": "regra",
-    "sourcedocuments": ["estatuto"],
-    "relevantfields": ["governance", "bylawstext"],
-    "promptinstruction": "Analise o texto do estatuto e encontre a duração do mandato da diretoria. Se o mandato for de 4 anos ou menos, o status será Conforme. Se for maior que 4 anos, Não Conforme. Se a duração não for mencionada, Inconclusivo. Responda em JSON com status e justificativa com o trecho que menciona a duração do mandato.",
-    "errormessage": "O mandato da diretoria definido no estatuto excede o limite de 4 anos."
+    "source_documents": ["estatuto"],
+    "relevant_fields": {
+      "estatuto": ["governance", "bylaws_text"]
+    },
+    "prompt_instruction": "Analise o texto do estatuto e encontre a duração do mandato da diretoria. Se o mandato for de 4 anos ou menos, o status é 'Conforme'. Se for maior que 4 anos, 'Não Conforme'. Se a duração não for mencionada, 'Inconclusivo'. Responda em JSON com 'status' e 'justificativa' (o trecho que menciona a duração do mandato).",
+    "error_message": "O mandato da diretoria definido no estatuto excede o limite de 4 anos."
   },
   {
-    "id": "CONSISTENCIA01",
-    "title": "Consistência de Nomes Ata vs. Identificação",
-    "description": "Verifica se os nomes dos diretores eleitos na ata de reunião são consistentes com os nomes nos documentos de identificação RG/CPF fornecidos.",
-    "category": "consistencia",
-    "sourcedocuments": ["ata", "identificacao"],
-    "relevantfields": ["attendees", "decisions", "resolutions", "maincontent"],
-    "promptinstruction": "Você receberá texto de dois documentos: 1) uma ata de eleição e 2) documentos de identificação. Extraia os nomes completos dos diretores de ambos os textos. Compare as listas. Se os nomes forem consistentes, o status Conforme. Se houver nomes na ata que não constam nos documentos de ID, o status Não Conforme. Se não for possível determinar, Inconclusivo. Responda em JSON com status e justificativa."
+    "id": "CONSISTENCIA_01",
+    "title": "Consistência de Nomes: Ata vs. Identificação",
+    "description": "Verifica se os nomes dos diretores eleitos na ata de reunião são consistentes com os nomes nos documentos de identificação (RG/CPF) fornecidos.",
+    "category": "consistência",
+    "source_documents": ["ata", "identificacao"],
+    "relevant_fields": {
+      "ata": ["attendees", "decisions", "resolutions"],
+      "identificacao": ["main_content"]
+    },
+    "prompt_instruction": "Você receberá texto de dois documentos: (1) uma ata de eleição e (2) documentos de identificação. Extraia os nomes completos dos diretores de ambos os textos. Compare as listas. Se os nomes forem consistentes, o status é 'Conforme'. Se houver nomes na ata que não constam nos documentos de ID, o status é 'Não Conforme'. Se não for possível determinar, 'Inconclusivo'. Responda em JSON com 'status' e 'justificativa' (liste os nomes consistentes e/ou as divergências encontradas).",
+    "error_message": "Há uma inconsistência entre os nomes dos diretores na ata e nos documentos de identificação."
   }
 ]

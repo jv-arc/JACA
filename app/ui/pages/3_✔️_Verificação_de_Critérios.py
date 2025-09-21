@@ -1,189 +1,161 @@
 import streamlit as st
-from app.core.project_manager import ProjectManager
+from typing import Dict, List
+# ==============================================================================
+# 1. INICIALIZAÇÃO E VERIFICAÇÃO DE ESTADO
+# ==============================================================================
 
-# Página de Verificação de Critérios
+st.set_page_config(page_title="Verificação de Critérios", page_icon="✔️", layout="wide")
+st.title("✔️ Verificação de Conformidade")
 
-# Carrega o ProjectManager da sessão
-project_manager = st.session_state.get('projectmanager', None)
-current_project = st.session_state.get('currentproject', None)
+# Pega os serviços e o projeto da sessão
+project_manager = st.session_state.get('project_manager')
+current_project = st.session_state.get('current_project')
+ui_logger = st.session_state.get('ui_logger')
 
-# Verifica se há projeto aberto
-if not project_manager or not current_project:
-    st.error("Nenhum projeto selecionado. Volte à Home e carregue ou crie um projeto para continuar.")
+if not all([project_manager, current_project, ui_logger]):
+    st.error("⚠️ Nenhum projeto selecionado ou a sessão expirou.")
+    st.info("Por favor, volte para a página `Home` e selecione ou crie um projeto para continuar.")
     st.stop()
 
-st.info(f"Projeto Aberto: {current_project}")
-st.caption("Esta é a etapa de Verificação de Critérios. Revise e aplique cada verificação antes de prosseguir.")
+st.info(f"**Projeto Aberto:** `{current_project}`")
+st.caption("Execute a verificação de critérios com a IA. A IA analisará os textos extraídos contra um conjunto de regras pré-definidas para avaliar a conformidade dos documentos.")
 st.divider()
 
-# Carrega todas as regras de verificação
-all_criteria = project_manager.get_all_criteria()
-project_data = project_manager.load_project(current_project)
+# ==============================================================================
+# 2. LÓGICA DE BACKEND
+# ==============================================================================
 
-# Mapeia resultados existentes
-results_map = {}
-if project_data and project_data.criteriaresults:
-    for res in project_data.criteriaresults:
-        results_map[res['id']] = res
+def handle_run_all_checks():
+    """Chama o backend para verificar todos os critérios pendentes."""
+    ui_logger.info(f"Usuário iniciou a verificação de todos os critérios para '{current_project}'.")
+    return project_manager.execute_criteria_verification(current_project)
 
-# Botão para verificação em lote
-pending = [c for c in all_criteria if c['id'] not in results_map]
-pending_count = len(pending)
-if st.button(f"Verificar todos os {pending_count} critérios pendentes", type='primary', disabled=(pending_count==0)):
-    with st.spinner("Analisando documentos e aplicando critérios... Isso pode levar alguns minutos."):
-        project_manager.execute_criteria_verification(current_project)
-    st.success("Verificação em lote concluída!")
-    st.experimental_rerun()
+def handle_run_single_check(criterion_id: str):
+    """Chama o backend para verificar um único critério."""
+    ui_logger.info(f"Usuário iniciou a verificação do critério '{criterion_id}' para '{current_project}'.")
+    return project_manager.execute_single_criterion_verification(current_project, criterion_id)
 
-st.divider()
+def handle_manual_override(criterion_id: str, new_status: str, new_justification: str):
+    """Chama o backend para aplicar uma correção manual."""
+    ui_logger.info(f"Usuário aplicou override no critério '{criterion_id}' para o status '{new_status}'.")
+    return project_manager.update_manual_override(current_project, criterion_id, new_status, new_justification)
 
-# Agrupa critérios por categoria em abas
-grouped = {}
-for c in all_criteria:
-    cat = c['category']
-    grouped.setdefault(cat, []).append(c)
-
-tabs = st.tabs(sorted(grouped.keys()))
-for tab, category in zip(tabs, sorted(grouped.keys())):
-    with tab:
-        st.subheader(category.capitalize())
-        for criterion in grouped[category]:
-            cid = criterion['id']
-            title = criterion['title']
-            desc = criterion.get('description', '')
-            sourcedocs = criterion.get('sourcedocuments', [])
-            result = results_map.get(cid, None)
-
-            col1, col2 = st.columns([3, 1])
-            with col1:
-                st.subheader(title)
-                st.caption(desc)
-            with col2:
-                # Checa se textos estão prontos
-                ready = all(project_manager.has_extracted_text(current_project, d) for d in sourcedocs)
-                if not ready:
-                    missing = [d for d in sourcedocs if not project_manager.has_extracted_text(current_project, d)]
-                    st.warning(f"Aguardando extração de: {', '.join(missing)}")
-                elif result:
-                    # Exibe status existente
-                    status = result['status']
-                    justify = result.get('justificativa', '')
-                    if status == 'Conforme':
-                        st.success(f"Conforme: {justify}")
-                    elif status == 'Não Conforme':
-                        st.error(f"Não Conforme: {justify}")
-                    else:
-                        st.info(f"Indeterminado: {justify}")
-                else:
-                    st.info("Pendente de Verificação")
-
-            # Botão de verificação individual
-            if ready:
-                if st.button(f"Verificar Critério", key=f"check_{cid}", use_container_width=True):
-                    with st.spinner(f"Verificando {title}..."):
-                        project_manager.run_single_check(current_project, cid)
-                    st.experimental_rerun()
-
-            # Override de resultado
-            if result and ready:
-                with st.expander("Sobrepor Decisão"):  
-                    new_status = st.selectbox("Status", ["Conforme", "Não Conforme", "Indeterminado"], index=["Conforme", "Não Conforme", "Indeterminado"].index(result['status']), key=f"override_{cid}")
-                    new_just = st.text_area("Justificativa", result.get('justificativa', ''), key=f"just_{cid}")
-                    if st.button("Aplicar Override", key=f"apply_{cid}"):
-                        project_manager.override_criteria_result(current_project, cid, new_status, new_just)
-                        st.success("Decisão atualizada")
-                        st.experimental_rerun()
-
-
-def rendercriterionstatusresult(result):
-    """Renderiza o status do critério com cores apropriadas"""
-    status = result['status']
-    if status == 'Conforme':
-        st.success(f"Conforme: {result.get('justificativa', '')}")
-    elif status == 'Não Conforme':
-        st.error(f"Não Conforme: {result.get('justificativa', '')}")
-    else:
-        st.info(f"Indeterminado: {result.get('justificativa', '')}")
-
-def renderoverrideoptionscriterion(criterion, result):
-    """Renderiza opções de override para um critério"""
-    if result:
-        with st.expander("Sobrepor Decisão"):  
-            new_status = st.selectbox(
-                "Status", 
-                ["Conforme", "Não Conforme", "Indeterminado"], 
-                index=["Conforme", "Não Conforme", "Indeterminado"].index(result['status']),
-                key=f"override_{criterion['id']}"
-            )
-            new_just = st.text_area(
-                "Justificativa", 
-                result.get('justificativa', ''),
-                key=f"just_{criterion['id']}"
-            )
-            if st.button("Aplicar Override", key=f"apply_{criterion['id']}"):
-                project_manager.override_criteria_result(current_project, criterion['id'], new_status, new_just)
-                st.success("Decisão atualizada")
-                st.rerun()
-
-
-def handlerunallchecks():
-    """Handler para verificação em lote"""
-    project_manager.execute_criteria_verification(current_project)
-
-def handlerunsinglecheckcriterionid(criterion_id):
-    """Handler para verificação individual"""
-    project_manager.run_single_check(current_project, criterion_id)
-
-def getgroupedcriteria(all_criteria):
-    """Agrupa critérios por categoria"""
+def get_grouped_criteria(all_criteria: List[Dict]) -> Dict[str, List[Dict]]:
+    """Agrupa critérios por fonte de documento para exibição em abas."""
     grouped = {}
     for c in all_criteria:
-        cat = c['category']
-        grouped.setdefault(cat, []).append(c)
+        docs = c.get('source_documents', [])
+        group_key = "Consistência e Regras Gerais"
+        if len(docs) == 1:
+            group_key = f"Critérios do {docs[0].capitalize()}"
+        
+        if group_key not in grouped:
+            grouped[group_key] = []
+        grouped[group_key].append(c)
     return grouped
 
+# ==============================================================================
+# 3. FUNÇÕES DE RENDERIZAÇÃO DA UI
+# ==============================================================================
 
-def rendercriterioncardcriterion(criterion, result):
-    """Renderiza um card completo para um critério"""
+def render_criterion_status(result: Dict):
+    """Renderiza o status (Conforme, Não Conforme, etc.) de um critério."""
+    status_map = {
+        "Conforme": ("success", "✅ Conforme"),
+        "Não Conforme": ("error", "❌ Não Conforme"),
+        "Inconclusivo": ("warning", "⚠️ Inconclusivo"),
+    }
+    default_style = ("error", f"🚨 Erro ({result.get('status', 'Desconhecido')})")
+    
+    style, text = status_map.get(result.get("status"), default_style)
+    getattr(st, style)(text)
+    
+    justificativa = result.get('justificativa', 'Nenhuma justificativa fornecida.')
+    st.caption("Justificativa da Análise:")
+    st.markdown(f"> {justificativa.replace(chr(10), '<br>')}", unsafe_allow_html=True) # Mantém quebras de linha
+    
+    if result.get('overridden_at'):
+        st.info("Este resultado foi alterado manualmente.")
+
+def render_override_options(criterion: Dict, result: Dict):
+    """Renderiza as opções avançadas para um critério (re-verificar, corrigir)."""
+    with st.expander("Opções Avançadas"):
+        # Re-verificar
+        if st.button("🤖 Verificar Novamente com IA", key=f"recheck_{criterion['id']}", type="secondary"):
+            with st.spinner(f"Re-verificando '{criterion['title']}'..."):
+                handle_run_single_check(criterion['id'])
+            st.rerun()
+        
+        st.markdown("---")
+        
+        # Override Manual
+        st.markdown("**Correção Manual**")
+        statuses = ["Conforme", "Não Conforme", "Inconclusivo"]
+        current_status_index = statuses.index(result['status']) if result['status'] in statuses else 0
+        
+        new_status = st.selectbox("Alterar status para:", statuses, index=current_status_index, key=f"override_status_{criterion['id']}")
+        new_just = st.text_area("Nova justificativa (obrigatório):", value=result['justificativa'], key=f"override_just_{criterion['id']}")
+        
+        if st.button("💾 Salvar Alteração Manual", key=f"save_override_{criterion['id']}", type="primary", disabled=not new_just):
+            handle_manual_override(criterion['id'], new_status, new_just)
+            st.toast("Alteração manual salva!")
+            st.rerun()
+
+def render_criterion_card(criterion: Dict, result: Optional[Dict]):
+    """Renderiza um 'card' completo para um único critério."""
     with st.container(border=True):
         col1, col2 = st.columns([2, 1])
-        
         with col1:
             st.subheader(criterion['title'])
             st.caption(criterion['description'])
-        
+
         with col2:
-            # Verifica se textos estão prontos
-            is_ready = all(
-                project_manager.has_extracted_text(current_project, doc) 
-                for doc in criterion['sourcedocuments']
-            )
-            
+            is_ready = all(project_manager.has_extracted_text(current_project, doc) for doc in criterion['source_documents'])
+
             if not is_ready:
-                st.warning(f"Aguardando extração de: {', '.join(criterion['sourcedocuments'])}")
+                st.warning(f"Aguardando extração de: {', '.join(criterion['source_documents'])}")
             elif result:
-                rendercriterionstatusresult(result)
-            else:
-                st.info("Pendente de Verificação")
-        
-        # Botão de verificação
-        if is_ready and st.button(f"Verificar Critério", key=f"check_{criterion['id']}", use_container_width=True):
-            with st.spinner(f"Verificando {criterion['title']}..."):
-                handlerunsinglecheckcriterionid(criterion['id'])
-            st.rerun()
-            
-        # Opções de override
+                render_criterion_status(result)
+            else: # Pronto, mas pendente
+                st.info("🔵 Pendente de Verificação")
+                if st.button("Verificar Critério", key=f"check_{criterion['id']}", use_container_width=True):
+                    with st.spinner(f"Verificando '{criterion['title']}'..."):
+                        handle_run_single_check(criterion['id'])
+                    st.rerun()
+
         if result and is_ready:
-            renderoverrideoptionscriterion(criterion, result)
+            render_override_options(criterion, result)
+
+# ==============================================================================
+# 4. RENDERIZAÇÃO PRINCIPAL DA PÁGINA
+# ==============================================================================
+
+# Carrega todos os dados necessários no início
+all_criteria = project_manager.get_all_criteria()
+project_data = project_manager.load_project(current_project)
+results_map = {res['id']: res for res in project_data.criteria_results} if project_data.criteria_results else {}
+
+# Botão principal para verificação em lote
+pending_checks_count = len([c for c in all_criteria if c['id'] not in results_map])
+if st.button(f"🤖 Verificar todos os {pending_checks_count} critérios pendentes", type="primary", disabled=pending_checks_count == 0):
+    with st.spinner("Analisando documentos e aplicando critérios... Isso pode levar alguns minutos."):
+        handle_run_all_checks()
+    st.success("Verificação em lote concluída!")
+    st.rerun()
+
+st.divider()
 
 # Agrupa e exibe os critérios em abas
-grouped_criteria = getgroupedcriteria(all_criteria)
-if grouped_criteria:
+grouped_criteria = get_grouped_criteria(all_criteria)
+if not all_criteria:
+    st.warning("Nenhum critério encontrado no banco de dados de critérios.")
+else:
+    # Ordena as abas para uma melhor visualização
     tab_names = sorted(grouped_criteria.keys())
     tabs = st.tabs(tab_names)
-    
+
     for i, group_name in enumerate(tab_names):
         with tabs[i]:
             for criterion in grouped_criteria[group_name]:
                 result = results_map.get(criterion['id'])
-                rendercriterioncardcriterion(criterion, result)
+                render_criterion_card(criterion, result)

@@ -1,87 +1,118 @@
 import os
 import fitz  # PyMuPDF
-from typing import Dict, Optional
+from typing import Dict, List
+
 from app.core.logger import Logger
+from app.core.models import ProjectState
 from app.core.pdf_generator import PdfGenerator
 from app.core.report_config_manager import ReportConfigManager
 
 
+
 class ExportManager:
     """
-    Orquestração de exportação de requisições.
-    Gera o PDF de formulário, concatena com documentos do usuário
-    e produz o pacote final para download.
+    Orquestra o processo completo de exportação, gerando o formulário
+    de requisição e unindo-o com os documentos do projeto.
     """
-
     def __init__(
         self,
         logger: Logger,
         pdf_generator: PdfGenerator,
-        report_config_manager: ReportConfigManager,
+        report_config_manager: ReportConfigManager
     ):
+        """
+        Inicializa o ExportManager.
+
+        Args:
+            logger (Logger): A instância do logger.
+            pdf_generator (PdfGenerator): A instância do gerador de PDF.
+            report_config_manager (ReportConfigManager): O gerenciador da configuração do relatório.
+        """
         self.logger = logger
         self.pdf_generator = pdf_generator
         self.report_config_manager = report_config_manager
+        self.logger.info("ExportManager inicializado.")
+
+    def _get_project_source_pdfs(self, project_data: ProjectState) -> List[str]:
+        """
+        Coleta uma lista de todos os caminhos de PDF originais do projeto.
+        """
+        all_files = []
+        if project_data and project_data.base_files:
+            for category_files in project_data.base_files.values():
+                for file_path in category_files:
+                    if file_path.lower().endswith('.pdf'):
+                        all_files.append(file_path)
+        
+        self.logger.info(f"Encontrados {len(all_files)} arquivos PDF de origem no projeto.")
+        return all_files
 
     def generate_full_package(
         self,
-        project_data,
+        project_data: ProjectState,
         user_overrides: Dict,
-        export_dir: str,
-    ) -> Optional[str]:
+        export_dir: str
+    ) -> str:
         """
-        1. Gera o PDF do formulário de requisição.
-        2. Coleta todos os PDFs de entrada do projeto.
-        3. Concatena o formulário e os demais PDFs em um único PDF.
-        4. Retorna o caminho para o pacote final.
-        """
-        # 1. Preparar diretório de exportação
-        os.makedirs(export_dir, exist_ok=True)
+        Gera o pacote completo de requisição em PDF.
 
-        # 2. Carregar configurações de relatório
+        Args:
+            project_data (ProjectState): Os dados completos do projeto.
+            user_overrides (Dict): Os valores preenchidos pelo usuário no formulário da UI.
+            export_dir (str): O diretório onde o arquivo final será salvo.
+
+        Returns:
+            str: O caminho para o arquivo PDF final e unificado.
+        """
+        project_name = project_data.name
+        self.logger.info(f"Iniciando geração do pacote de exportação para o projeto '{project_name}'.")
+
+        # 1. Gerar o PDF do formulário de requisição
+        form_pdf_path = os.path.join(export_dir, f"temp_form_{project_name}.pdf")
         report_config = self.report_config_manager.get_full_config()
 
-        # 3. Gerar formulário preenchido
-        form_path = os.path.join(export_dir, f"REQUISICAO_{project_data.name}.pdf")
+        success = self.pdf_generator.create_request_pdf(
+            project_data=project_data,
+            report_config=report_config,
+            user_overrides=user_overrides,
+            output_path=form_pdf_path
+        )
+
+        if not success:
+            self.logger.error("Falha ao gerar o PDF do formulário. Abortando a exportação.")
+            raise IOError("Não foi possível gerar o PDF do formulário de requisição.")
+
+        # 2. Coletar todos os outros PDFs do projeto
+        source_pdfs = self._get_project_source_pdfs(project_data)
+        
+        # 3. Concatenar todos os PDFs em um único arquivo
+        final_pdf_path = os.path.join(export_dir, f"REQUISICAO_{project_name}.pdf")
+        
         try:
-            self.logger.info(f"Gerando formulário de requisição em {form_path}")
-            success = self.pdf_generator.create_request_pdf(
-                project_data,
-                report_config,
-                user_overrides,
-                output_path=form_path,
-            )
-            if not success:
-                self.logger.error("Falha ao gerar o PDF do formulário")
-                return None
-        except Exception as e:
-            self.logger.error("Erro ao gerar formulário de requisição", exc_info=True)
-            return None
-
-        # 4. Coletar PDFs de entrada do projeto (estatuto, ata, etc.)
-        source_pdfs = project_data.get_all_pdf_paths()
-
-        # 5. Concatena o formulário e os demais PDFs
-        final_path = os.path.join(export_dir, f"PACOTE_FINAL_{project_data.name}.pdf")
-        try:
-            self.logger.info(f"Concatenando {len(source_pdfs)+1} PDFs em {final_path}")
-            final_doc = fitz.open()  # PDF vazio
-
-            # 5.1 Inserir formulário primeiro
-            final_doc.insert_pdf(fitz.open(form_path))
-
-            # 5.2 Inserir demais PDFs
+            self.logger.info(f"Concatenando {len(source_pdfs) + 1} PDFs em um único arquivo...")
+            final_doc = fitz.open()  # Cria um novo documento PDF vazio
+            
+            # Adiciona o formulário primeiro
+            final_doc.insert_pdf(fitz.open(form_pdf_path))
+            
+            # Adiciona os documentos do usuário
             for pdf_path in source_pdfs:
                 if os.path.exists(pdf_path):
                     final_doc.insert_pdf(fitz.open(pdf_path))
                 else:
-                    self.logger.warning(f"Arquivo de origem não encontrado: {pdf_path}")
-
-            final_doc.save(final_path)
+                    self.logger.warning(f"Arquivo PDF de origem não encontrado e será pulado: {pdf_path}")
+            
+            # Salva o resultado final
+            final_doc.save(final_pdf_path)
             final_doc.close()
-            self.logger.info(f"Pacote final salvo em {final_path}")
-            return final_path
-
+            self.logger.info(f"Pacote de requisição final salvo com sucesso em: {final_pdf_path}")
+            
+            return final_pdf_path
+            
         except Exception as e:
-            self.logger.error("Falha ao concatenar os PDFs", exc_info=True)
-            return None
+            self.logger.error(f"Falha ao concatenar os PDFs: {e}", exc_info=True)
+            raise IOError("Ocorreu um erro ao unir os documentos PDF.")
+        finally:
+            # Limpa o arquivo de formulário temporário
+            if os.path.exists(form_pdf_path):
+                os.remove(form_pdf_path)

@@ -2,21 +2,16 @@ import logging
 import sys
 from logging.handlers import RotatingFileHandler
 
-class Logger:
-    """
-    Uma classe wrapper para o módulo logging do Python.
-    Configura um logger para exibir logs no console e, opcionalmente, em um arquivo.
-    """
+#=================================================================================
+# CLASS: Logger
+#---------------------------------------------------------------------------------
+# Uma classe wrapper para o módulo logging do Python.
+# Configura um logger para exibir logs no console e, opcionalmente, em um arquivo.
+#=================================================================================
     
-    def __init__(self, name: str = "app", level: int = logging.INFO, logfile: str = None):
-        """
-        Inicializa o Logger.
-        
-        Args:
-            name (str): O nome do logger.
-            level (int): O nível de logging (ex: logging.INFO, logging.DEBUG).
-            logfile (str, optional): Caminho do arquivo para salvar os logs. Defaults to None.
-        """
+class Logger:
+    
+    def __init__(self, name: str = "JACA-", level: int = logging.INFO, logfile: str = "/home/jvctr/0/NOW/JACA/app/core/log.txt"):
         self.logger = logging.getLogger(name)
         self.logger.setLevel(level)
         

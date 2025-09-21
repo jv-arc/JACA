@@ -11,234 +11,249 @@ from app.core.ai_client import GeminiClient
 from app.core.data_manager import ExtractedDataManager
 from app.core.project_manager import ProjectManager
 from app.core.logger import Logger
+from app.core.criteria_manager import CriteriaManager
+from app.core.export_manager import ExportManager
+from app.core.pdf_generator import PdfGenerator
+from app.core.report_config_manager import ReportConfigManager
+
+# ===============================
+# 1. INICIALIZAÇÃO DOS SERVIÇOS
+# ===============================
 
 # Garante que este bloco execute apenas uma vez por sessão
 @st.cache_resource
-def initializeservices():
-    # 1. Componentes base
-    logger = Logger(name="DocAI-App")
+def initialize_services():
     settings = Settings()
-    promptmanager = PromptManager()
+    prompt_manager = PromptManager()
+    pm_logger = Logger(name='ProjectManager')
+    dm_logger = Logger(name='DataManager')
+    gc_logger = Logger(name='GeminiClient')
+    cm_logger = Logger(name='CriteriaManager')
+    em_logger = Logger(name='ExportManager')
+    pdf_logger = Logger(name='PdfGenerator')
+    rcm_logger = Logger(name='ReportConfigManager')
+    ui_logger = Logger(name='StreamlitUI')
 
-    # 2. Cliente da IA
-    geminiclient = GeminiClient(settings=settings, logger=logger)
-
-    # 3. Manager de Extração
-    extractionmanager = ExtractedDataManager(
-        geminiclient=geminiclient,
-        promptmanager=promptmanager,
-        logger=logger
+    # Cliente da IA
+    gemini_client = GeminiClient(
+        settings=settings, 
+        logger=gc_logger
     )
 
-    # 4. Manager de Projeto
-    projectmanager = ProjectManager(
-        extractionmanager=extractionmanager,
-        logger=logger,
-        projectsdir="data/projects"
+    # Manager de Extração
+    extraction_manager = ExtractedDataManager(
+        gemini_client=gemini_client,
+        prompt_manager=prompt_manager,
+        logger=dm_logger
     )
 
-    logger.info("Todos os serviços foram inicializados com sucesso.")
-    return projectmanager
+    # Manager de Extração
+    criteria_manager = CriteriaManager(
+        gemini_client=gemini_client,
+        prompt_manager=prompt_manager,
+        logger=cm_logger
+    )
 
-# Carrega o gerenciador de projetos na sessão
-projectmanager = initializeservices()
-st.session_state.projectmanager = projectmanager
+     
+    report_config_manager = ReportConfigManager(
+        logger=rcm_logger
+    )
 
-# Configura a página
+    pdf_generator = PdfGenerator(
+        logger=pdf_logger
+    )
+
+    export_manager = ExportManager(
+        logger=em_logger,
+        pdf_generator=pdf_generator,
+        report_config_manager=report_config_manager
+    )
+
+
+    # Manager de Projeto
+    project_manager = ProjectManager(
+        extraction_manager=extraction_manager,
+        criteria_manager=criteria_manager,
+        export_manager=export_manager,
+        logger=pm_logger,
+        projects_dir="data/projects"
+    )
+    
+    ui_logger.info("✅ Aplicação iniciada e serviços carregados.")
+
+    return {
+            'project_manager': project_manager,
+            'ui_logger': ui_logger,
+            'report_config_manager': report_config_manager
+        }
+
+# Carrega os serviços
+services = initialize_services()
+
+st.session_state['project_manager'] = services['project_manager']
+st.session_state['ui_logger'] = services['ui_logger']
+
+# ==============================================================================
+# 2. CONFIGURAÇÃO DA PÁGINA E FUNÇÕES UTILITÁRIAS
+# ==============================================================================
+
 st.set_page_config(
     page_title="Assistente de Outorga",
     page_icon="📑",
     layout="centered"
 )
 
-def openfilewithdefaultapp(filepath: str) -> bool:
+def open_file_with_default_app(file_path: str):
+    """Abre um arquivo com o aplicativo padrão do sistema operacional."""
     try:
-        if not os.path.exists(filepath):
-            st.error(f"Arquivo não encontrado: {filepath}")
-            return False
-
         system = platform.system()
         if system == "Windows":
-            os.startfile(filepath)
-        elif system == "Darwin":
-            subprocess.call(["open", filepath])
+            os.startfile(file_path)
+        elif system == "Darwin":  # macOS
+            subprocess.run(["open", file_path], check=True)
         elif system == "Linux":
-            subprocess.call(["xdg-open", filepath])
+            subprocess.run(["xdg-open", file_path], check=True)
         else:
             st.error(f"Sistema operacional não suportado: {system}")
-            return False
-
-        return True
     except Exception as e:
         st.error(f"Erro ao abrir arquivo: {e}")
-        return False
 
-# Inicializa sessão
-if "currentproject" not in st.session_state:
-    st.session_state.currentproject = None
+# ==============================================================================
+# 3. FUNÇÕES DE RENDERIZAÇÃO DA UI (Para evitar repetição de código)
+# ==============================================================================
+def display_files_for_category(category_key: str, files: List[str], project_name: str):
+    """Mostra a lista de arquivos de uma categoria com botões de ação."""
+    for i, file_path in enumerate(files):
+        col1, col2, col3 = st.columns([4, 1, 1])
+        with col1:
+            file_name = os.path.basename(file_path)
+            file_size = f"{os.path.getsize(file_path) / 1024:.1f} KB" if os.path.exists(file_path) else "N/A"
+            st.markdown(f"📄 **{file_name}** `({file_size})`")
+        with col2:
+            if st.button("Ver", key=f"view_{category_key}_{i}", use_container_width=True):
+                open_file_with_default_app(file_path)
+        with col3:
+            if st.button("Remover", key=f"remove_{category_key}_{i}", type="secondary", use_container_width=True):
+                if project_manager.remove_pdf_file(project_name, file_path, category_key):
+                    st.toast(f"Arquivo '{file_name}' removido.")
+                    st.rerun()
+                else:
+                    st.error("Falha ao remover o arquivo.")
 
-st.title("Assistente de Outorga para Rádios Comunitárias")
+def render_category_uploader(category_config: Dict[str, Any], project_data: Any):
+    """Renderiza uma seção completa de upload e listagem para uma categoria."""
+    st.markdown(f"### {category_config['title']}")
+    st.caption(category_config['description'])
 
-if st.session_state.currentproject:
-    projectname = st.session_state.currentproject
-    col1, col2 = st.columns(3)[0], st.columns(3)[1]
+    category_key = category_config['key']
+    project_name = project_data.name
+    files = project_data.base_files.get(category_key, [])
+    
+    # Mostra os arquivos existentes
+    if files:
+        display_files_for_category(category_key, files, project_name)
+        expander_title = "Adicionar/Substituir Arquivos"
+    else:
+        st.warning(f"⚠️ Nenhum arquivo para a categoria '{category_config['title']}'.")
+        expander_title = f"Adicionar Arquivos de {category_config['title']}"
 
+    # Expander para adicionar novos arquivos
+    with st.expander(expander_title):
+        uploaded_files = st.file_uploader(
+            "Selecione os arquivos",
+            key=f"upload_{category_key}",
+            type=['pdf', 'docx'],
+            accept_multiple_files=category_config.get('multiple', True),
+            label_visibility="collapsed"
+        )
+        
+        files_to_upload = uploaded_files if isinstance(uploaded_files, list) else [uploaded_files]
+        
+        if st.button(f"Salvar no Projeto", key=f"save_{category_key}", type="primary", disabled=not uploaded_files):
+            success_count = 0
+            for uploaded_file in files_to_upload:
+                if uploaded_file: # Garante que o arquivo não é None
+                    if project_manager.add_pdf_file(project_name, uploaded_file, category_key):
+                        success_count += 1
+            if success_count > 0:
+                st.toast(f"{success_count} arquivo(s) adicionado(s) com sucesso!")
+                st.rerun()
+
+# ==============================================================================
+# 4. LÓGICA PRINCIPAL DA APLICAÇÃO
+# ==============================================================================
+st.title("🤖 Assistente de Outorga para Rádios Comunitárias")
+
+# Garante que a sessão está inicializada
+if 'current_project' not in st.session_state:
+    st.session_state.current_project = None
+
+# ---- SE UM PROJETO ESTÁ SELECIONADO ----
+if st.session_state.current_project:
+    project_name = st.session_state.current_project
+    
+    # Cabeçalho da página do projeto
+    col1, col2 = st.columns([3, 1])
     with col1:
-        st.info(f"Projeto Atual: {projectname}")
-
+        st.info(f"**Projeto Aberto:** `{project_name}`")
     with col2:
-        if st.button("Trocar de Projeto", type="secondary"):
-            st.session_state.currentproject = None
-            st.experimental_rerun()
+        if st.button("🔄 Trocar de Projeto", use_container_width=True):
+            st.session_state.current_project = None
+            st.rerun()
 
-    projectmanager.verify_and_fix_filepaths(projectname)
-    projectdata = projectmanager.loadproject(projectname)
-    if not projectdata:
-        st.error("Falha ao carregar arquivos do projeto.")
+    st.markdown("Gerencie aqui os documentos do seu projeto. Faça o upload dos arquivos necessários para cada categoria antes de prosseguir para a extração de dados.")
+    st.divider()
+
+    # Carrega os dados do projeto UMA VEZ
+    project_manager.verify_and_fix_file_paths(project_name)
+    project_data = project_manager.load_project(project_name)
+
+    if not project_data:
+        st.error("Falha fatal ao carregar o projeto. Tente novamente ou crie um novo.")
+        st.session_state.current_project = None
         st.stop()
 
-    st.markdown("Nesta página você pode editar e modificar quais arquivos fazem parte do projeto. Selecione os arquivos de ata, estatuto, identificação etc.")
-    st.markdown("---")
+    # Define a configuração para cada categoria de documento
+    CATEGORIES = [
+        {'key': 'estatuto', 'title': 'Estatuto da Organização', 'description': 'Faça o upload do arquivo do estatuto social, em PDF ou DOCX.', 'multiple': False},
+        {'key': 'ata', 'title': 'Ata de Eleição da Última Diretoria', 'description': 'Anexe a ata de eleição e posse da diretoria atual.'},
+        {'key': 'identificacao', 'title': 'Documentos de Identificação dos Diretores', 'description': 'Anexe os RGs e CPFs de todos os diretores.'},
+        {'key': 'licenca', 'title': 'Licença de Funcionamento (se houver)', 'description': 'Anexe licenças prévias ou existentes.'},
+        {'key': 'programacao', 'title': 'Grade de Programação', 'description': 'Anexe o documento com a grade de programação semanal.'}
+    ]
 
-    def displaycategoryfiles(categoryname: str, files: List[str], categorykey: str):
-        if files:
-            for i, filepath in enumerate(files):
-                col1, col2, col3 = st.columns(4)[0], st.columns(4)[1], st.columns(4)[2]
-                with col1:
-                    filename = os.path.basename(filepath)
-                    if os.path.exists(filepath):
-                        size = os.path.getsize(filepath)
-                        filesize = f"{size/1024:.1f} KB"
-                    else:
-                        filesize = "NA"
-                    st.markdown(f"{filename} — {filesize}")
-                with col2:
-                    if st.button("Ver arquivo", key=f"view-{categorykey}-{i}", use_container_width=True):
-                        openfilewithdefaultapp(filepath)
-                with col3:
-                    if st.button("Remover", key=f"remove-{categorykey}-{i}", type="secondary"):
-                        if projectmanager.removepdffile(projectname, filepath, categorykey):
-                            st.success(f"{filename} removido")
-                            st.experimental_rerun()
-                        else:
-                            st.error(f"Falha ao remover {filename}")
+    # Renderiza a UI para cada categoria usando um loop
+    for category in CATEGORIES:
+        render_category_uploader(category, project_data)
+        st.divider()
+    
+    st.info("💡 **Pronto?** Prossiga para a página **Extrair Texto** no menu ao lado para iniciar a análise com IA.")
 
-    def handlefileupload(uploadedfiles, categorykey: str):
-        if uploadedfiles:
-            col1, col2 = st.columns(3)[0], st.columns(3)[1]
-            with col2:
-                if st.button(f"Add Files to Project", key=f"add-{categorykey}", type="primary"):
-                    successcount = 0
-                    for uploadedfile in uploadedfiles:
-                        if projectmanager.addpdffile(projectname, uploadedfile, categorykey):
-                            successcount += 1
-                    if successcount > 0:
-                        st.success(f"Successfully added {successcount} files to project!")
-                        st.experimental_rerun()
-                    else:
-                        st.error("Failed to add files to project.")
-
-    basefiles = projectdata.basefiles if hasattr(projectdata, "basefiles") and projectdata.basefiles else {}
-
-    # 1. Estatuto
-    st.markdown("**Arquivo do Estatuto**")
-    st.markdown("Faça upload do arquivo do estatuto, você deve fazer upload de apenas um arquivo em PDF ou DOCX.")
-    estatutofiles = basefiles.get("estatuto", [])
-    if not estatutofiles:
-        with st.expander("Adicionar Estatuto"):
-            uploaded = st.file_uploader("Escolha o arquivo", key="estatuto", type=["pdf", "docx"], accept_multiple_files=False)
-            handlefileupload(uploaded, "estatuto")
-    else:
-        displaycategoryfiles("Estatuto", estatutofiles, "estatuto")
-        with st.expander("Substituir Estatuto"):
-            uploaded = st.file_uploader("Escolha o arquivo", key="estatuto-replace", type=["pdf", "docx"], accept_multiple_files=False)
-            handlefileupload(uploaded, "estatuto")
-
-    st.markdown("---")
-
-    # 2. Ata de Eleição
-    st.markdown("**Ata de Eleição da última diretoria**")
-    atafiles = basefiles.get("ata", [])
-    if not atafiles:
-        with st.expander("Adicionar Ata"):
-            uploaded = st.file_uploader("Escolha o Arquivo", key="ata", type=["pdf"], accept_multiple_files=True)
-            handlefileupload(uploaded, "ata")
-    else:
-        displaycategoryfiles("Ata de Eleição", atafiles, "ata")
-        with st.expander("Adicionar Mais Atas"):
-            uploaded = st.file_uploader("Escolha o Arquivo", key="ata-add", type=["pdf"], accept_multiple_files=True)
-            handlefileupload(uploaded, "ata")
-
-    st.markdown("---")
-
-    # 3. Documentos de Identificação
-    st.markdown("**Documentos de Identificação**")
-    idfiles = basefiles.get("identificacao", [])
-    if not idfiles:
-        with st.expander("Adicionar Documentos"):
-            uploaded = st.file_uploader("Choose PDF files", key="identificacao", type=["pdf"], accept_multiple_files=True)
-            handlefileupload(uploaded, "identificacao")
-    else:
-        displaycategoryfiles("Documentos de Identificação", idfiles, "identificacao")
-        with st.expander("Adicionar Mais Documentos"):
-            uploaded = st.file_uploader("Choose PDF files", key="identificacao-add", type=["pdf"], accept_multiple_files=True)
-            handlefileupload(uploaded, "identificacao")
-
-    st.markdown("---")
-
-    # 4. Licença de Funcionamento
-    st.markdown("**Licença de Funcionamento**")
-    licfiles = basefiles.get("licenca", [])
-    if not licfiles:
-        with st.expander("Adicionar Licença"):
-            uploaded = st.file_uploader("Choose PDF files", key="licenca", type=["pdf"], accept_multiple_files=True)
-            handlefileupload(uploaded, "licenca")
-    else:
-        displaycategoryfiles("Licença de Funcionamento", licfiles, "licenca")
-        with st.expander("Adicionar Mais Licenças"):
-            uploaded = st.file_uploader("Choose PDF files", key="licenca-add", type=["pdf"], accept_multiple_files=True)
-            handlefileupload(uploaded, "licenca")
-
-    st.markdown("---")
-
-    # 5. Grade da Programação
-    st.markdown("**Grade da Programação**")
-    progfiles = basefiles.get("programacao", [])
-    if not progfiles:
-        with st.expander("Adicionar Grade"):
-            uploaded = st.file_uploader("Choose PDF files", key="programacao", type=["pdf"], accept_multiple_files=True)
-            handlefileupload(uploaded, "programacao")
-    else:
-        displaycategoryfiles("Grade da Programação", progfiles, "programacao")
-        with st.expander("Adicionar Mais Grades"):
-            uploaded = st.file_uploader("Choose PDF files", key="programacao-add", type=["pdf"], accept_multiple_files=True)
-            handlefileupload(uploaded, "programacao")
-
-    st.markdown("---")
-    st.info("Você pode analisar os conteúdos na próxima seção “Extrair Texto” no menu ao lado para iniciar a análise com IA.")
-
+# ---- SE NENHUM PROJETO ESTÁ SELECIONADO ----
 else:
-    st.markdown("Selecione um projeto ou crie um novo para começar.")
-
-    with st.form("newprojectform"):
-        newprojectname = st.text_input("Nome para o Novo Projeto")
-        submitted = st.form_submit_button("Criar Projeto", type="primary")
+    st.markdown("### Selecione um projeto ou crie um novo para começar.")
+    
+    # Seção para CRIAR um novo projeto
+    with st.form("new_project_form"):
+        new_project_name = st.text_input("Nome para o Novo Projeto")
+        submitted = st.form_submit_button("Criar Projeto", type="primary", use_container_width=True, disabled=not new_project_name)
         if submitted:
-            if projectmanager.createproject(newprojectname):
-                st.session_state.currentproject = newprojectname
-                st.experimental_rerun()
+            if project_manager.create_project(new_project_name):
+                st.session_state.current_project = new_project_name
+                st.rerun()
             else:
-                st.error(f"Um projeto com o nome {newprojectname} já existe.")
+                st.error(f"Um projeto com o nome '{new_project_name}' já existe.")
 
     st.divider()
 
-    existing = projectmanager.listprojects()
-    if existing:
-        with st.form("loadprojectform"):
-            selected = st.selectbox("Ou selecione um projeto existente", existing)
-            submitted = st.form_submit_button("Carregar Projeto")
+    # Seção para CARREGAR um projeto existente
+    existing_projects = project_manager.list_projects()
+    if existing_projects:
+        with st.form("load_project_form"):
+            selected_project = st.selectbox("Ou selecione um projeto existente", existing_projects)
+            submitted = st.form_submit_button("Carregar Projeto", use_container_width=True)
             if submitted:
-                st.session_state.currentproject = selected
-                st.experimental_rerun()
+                st.session_state.current_project = selected_project
+                st.rerun()
     else:
         st.info("Nenhum projeto encontrado. Crie seu primeiro projeto acima!")

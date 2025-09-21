@@ -1,0 +1,1 @@
+2025-09-21 12:57:35,702 - GeminiClient - CRITICAL - logger.py:55 - API key do Gemini não foi fornecida.

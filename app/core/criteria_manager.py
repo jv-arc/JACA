@@ -6,29 +6,25 @@ from app.core.prompt_manager import PromptManager
 from app.core.logger import Logger
 from app.core.models import ProjectState
 
+
+#======================================================================================================================
+# Responsável por carregar critérios de um arquivo JSON e executar a verificação de conformidade em dados de um projeto.
+#======================================================================================================================
+
 class CriteriaManager:
-    """
-    Responsável por carregar critérios de um arquivo JSON e executar a verificação de conformidade em dados de um projeto.
-    """
+    
 
     def __init__(self,
                  gemini_client: GeminiClient,
                  prompt_manager: PromptManager,
                  logger: Logger,
                  criteria_db_path: str = "src/criteria/criteriadatabase.json"):
-        """
-        Inicializa o CriteriaManager.
 
-        Args:
-            gemini_client (GeminiClient): Cliente para a API Gemini.
-            prompt_manager (PromptManager): Gerenciador de prompts.
-            logger (Logger): Instância do logger.
-            criteria_db_path (str): Caminho para o banco de dados de critérios em JSON.
-        """
         self.gemini_client = gemini_client
         self.prompt_manager = prompt_manager
         self.logger = logger
         self.criteria = self.load_criteria(criteria_db_path)
+
 
     def load_criteria(self, db_path: str) -> List[Dict]:
         """
@@ -53,50 +49,38 @@ class CriteriaManager:
             self.logger.error(f"Erro ao decodificar o JSON de critérios em {db_path}: {e}")
             return []
 
-    def gather_context_text(self,
-                            criterion: Dict,
-                            project_data: ProjectState) -> Optional[str]:
+    def _gather_context_text(self, criterion: Dict, project_data: ProjectState) -> Optional[str]:
         """
-        Coleta e formata o texto relevante dos documentos do projeto.
-
-        Args:
-            criterion (Dict): Critério a ser verificado.
-            project_data (ProjectState): Estado do projeto com dados extraídos.
-
-        Returns:
-            Optional[str]: Texto concatenado dos campos relevantes, ou None se não houver dados.
+        Coleta o texto de contexto para um critério.
+        VERSÃO MVP: Usa o `consolidated_text`, que é o campo editado pelo usuário.
         """
         context_parts = []
-        sourcedocs = criterion.get("sourcedocuments", [])
-        relevant_fields = criterion.get("relevantfields", {})
+        source_docs = criterion.get("source_documents", [])
 
-        for doc_name in sourcedocs:
-            doc_data = project_data.extracteddata.get(doc_name)
+        for doc_name in source_docs:
+            doc_data = getattr(project_data.extracted_data, doc_name, None)
+            
+            # Verifica se os dados daquele documento existem
             if not doc_data:
-                self.logger.warning(f"Dados para o documento {doc_name} não encontrados no projeto para o critério {criterion.get('id')}.")
+                self.logger.warning(f"Dados para o documento '{doc_name}' não encontrados no projeto para o critério '{criterion['id']}'.")
                 continue
 
-            fields = relevant_fields.get(doc_name, [])
-            for field_name in fields:
-                field_text = None
+            # Pega o texto consolidado, que é a fonte da verdade após a edição do usuário
+            consolidated_text = getattr(doc_data, 'consolidated_text', '').strip()
 
-                if hasattr(doc_data, "contentfields"):
-                    field_text = doc_data.contentfields.get(field_name, "").strip()
-                elif isinstance(doc_data, dict):
-                    field_text = doc_data.get(field_name, "").strip()
-
-                if field_text:
-                    context_parts.append(f"Trecho de {doc_name.upper()} - Campo {field_name}: {field_text}")
+            if consolidated_text:
+                # Adiciona um cabeçalho para dar contexto à IA, especialmente em verificações de consistência
+                context_parts.append(f"### Documento Fornecido: {doc_name.upper()} ###\n{consolidated_text}")
+            else:
+                self.logger.warning(f"Texto consolidado para '{doc_name}' está vazio para o critério '{criterion['id']}'.")
 
         if not context_parts:
-            self.logger.error(f"Nenhum texto de contexto pode ser reunido para o critério {criterion.get('id')}.")
+            self.logger.error(f"Nenhum texto de contexto pôde ser reunido para o critério '{criterion['id']}'.")
             return None
 
-        return "\n".join(context_parts)
+        return "\n\n---\n\n".join(context_parts)
 
-    def perform_single_check(self,
-                             criterion: Dict,
-                             project_data: ProjectState) -> Dict:
+    def _perform_single_check(self, criterion: Dict, project_data: ProjectState) -> Dict:
         """
         Executa a verificação para um único critério.
 
@@ -111,10 +95,10 @@ class CriteriaManager:
         self.logger.info(f"Executando verificação para o critério {criterion_id} - {criterion.get('title')}")
 
         # 1. Coletar o texto de contexto
-        context_text = self.gather_context_text(criterion, project_data)
+        context_text = self._gather_context_text(criterion, project_data)
 
         result = {
-            "id": criterion_id,
+            "id": criterion["id"],
             "title": criterion.get("title"),
             "category": criterion.get("category"),
             "status": "Pendente",
@@ -127,13 +111,13 @@ class CriteriaManager:
             return result
 
         # 2. Montar o prompt
-        prompt = self.prompt_manager.get_criteriacheck_prompt(
-            contexttext=context_text,
+        prompt = self.prompt_manager.get_criteria_check_prompt(
+            context_text=context_text,
             instruction=criterion.get("promptinstruction", "")
         )
 
         # 3. Executar a chamada à IA
-        model = self.gemini_client.settings.criteriamodel
+        model = self.gemini_client.settings.criteria_model
         ai_response = self.gemini_client.generate_json_from_prompt(prompt, model)
 
         # 4. Processar a resposta da IA
@@ -167,7 +151,7 @@ class CriteriaManager:
         all_results = []
 
         for criterion in self.criteria:
-            check_result = self.perform_single_check(criterion, project_data)
+            check_result = self._perform_single_check(criterion, project_data)
             all_results.append(check_result)
 
         self.logger.info("Verificação de todos os critérios concluída.")

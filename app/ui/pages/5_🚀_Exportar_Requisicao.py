@@ -1,254 +1,114 @@
 import streamlit as st
 import os
-from typing import Dict, List, Any
 
-# 1. INICIALIZAÇÃO E VERIFICAÇÃO DE ESTADO
-st.set_page_config(page_title="Exportar Requisição", page_icon="📤", layout="wide")
-st.title("📤 Exportar Pacote de Requisição")
+# ==============================================================================
+# 1. INICIALIZAÇÃO E VERIFICAÇÃO DE ESTADO (sem alterações)
+# ==============================================================================
 
-# --- Carregamento e Verificação Inicial ---
-projectmanager = st.session_state.get("projectmanager")
-currentproject = st.session_state.get("currentproject")
+st.set_page_config(page_title="Exportar Requisição", page_icon="🚀", layout="wide")
+st.title("🚀 Exportar Pacote de Requisição")
 
-if not all([projectmanager, currentproject]):
-    st.error("❌ Nenhum projeto selecionado. Volte para a Home e carregue ou crie um projeto para continuar.")
+project_manager = st.session_state.get('project_manager')
+current_project = st.session_state.get('current_project')
+ui_logger = st.session_state.get('ui_logger')
+
+if not all([project_manager, current_project, ui_logger]):
+    st.error("⚠️ Nenhum projeto selecionado ou a sessão expirou.")
+    st.info("Por favor, volte para a página `Home` e selecione ou crie um projeto para continuar.")
     st.stop()
 
-st.info(f"📁 Projeto Aberto: {currentproject}")
-st.caption("Esta é a etapa final. O processo foi dividido em etapas para garantir que todos os documentos sejam gerados, assinados e compilados corretamente.")
+st.info(f"**Projeto Aberto:** `{current_project}`")
+st.caption("Esta é a etapa final. Se todos os critérios de conformidade foram atendidos, você poderá gerar o pacote de documentos completo para a requisição de outorga.")
 st.divider()
 
-# --- Carrega todos os dados necessários uma única vez ---
-allcriteria = projectmanager.getallcriteria()
-projectdata = projectmanager.loadproject(currentproject)
-results = projectdata.criteriaresults if projectdata else []
-resultsmap = {res["id"]: res for res in results}
+# ==============================================================================
+# 2. FUNÇÕES DE RENDERIZAÇÃO DA UI (Reestruturadas)
+# ==============================================================================
 
-# 2. FUNÇÕES AUXILIARES E DE RENDERIZAÇÃO
+def render_download_screen(package_path: str):
+    """Renderiza a tela para baixar ou apagar um pacote já existente."""
+    st.success("✅ **Pacote de Requisição Pronto para Download!**")
+    st.markdown("Um pacote de requisição já foi gerado para este projeto. Você pode baixá-lo diretamente ou, se necessário, apagá-lo para gerar um novo com informações atualizadas.")
 
-def renderapprovalblock():
-    """Exibe um bloco de erro quando o projeto não está pronto para exportar."""
-    failed_criteria = [res for res in results if res.get("status") != "Conforme"]
-    pending_criteria = [c for c in allcriteria if c["id"] not in resultsmap]
-    
-    st.error("❌ Projeto Não Aprovado para Exportação")
-    st.warning("Para gerar o pacote de requisição, todos os critérios da fase anterior devem estar com o status 'Conforme'. Por favor, volte à página de Verificação de Critérios para resolver as pendências abaixo.")
-    
-    if failed_criteria:
-        with st.expander("❌ Critérios com Falhas (Não Conforme ou Erro)", expanded=True):
-            for item in failed_criteria:
-                st.markdown(f"- {item['title']} | Status: {item['status']}")
-    
-    if pending_criteria:
-        with st.expander("⏳ Critérios Pendentes de Verificação"):
-            for item in pending_criteria:
-                st.markdown(f"- {item['title']}")
-    
-    st.stop()
-
-def getprefilledvalue(projectdataobj: Any, fieldconfig: Dict) -> Any:
-    """Busca um valor pré-extrado dos dados do projeto."""
-    defaultvalue = fieldconfig.get("default", "")
-    datakey = fieldconfig.get("datakey")
-    
-    if not datakey or not projectdataobj or not projectdataobj.extracteddata:
-        return defaultvalue
-    
-    try:
-        category, fieldnamepath = datakey.split(".", 1)
-        docdatadict = getattr(projectdata.extracteddata, category, None)
-        
-        if docdatadict and "contentfields" in docdatadict:
-            finalkey = fieldnamepath.split(".")[-1]
-            return docdatadict["contentfields"].get(finalkey, defaultvalue)
-    except Exception:
-        return defaultvalue
-    
-    return defaultvalue
-
-def initializepersistentstate(projectdataobj: Any):
-    """Inicializa as chaves de ESTADO PERSISTENTE, se não existirem."""
-    if "forminitialized" in st.session_state:
-        return
-    
-    reportconfig = projectmanager.getreportconfiguration()
-    
-    # Inicializa campos do formulário
-    for table in reportconfig.get("tables", []):
-        for field in table.get("fields", []):
-            fieldkey = f"form{field['id']}"
-            if fieldkey not in st.session_state:
-                prefilled = getprefilledvalue(projectdataobj, field) if field.get("source") == "extracted" else field.get("default", "")
-                st.session_state[fieldkey] = prefilled if prefilled else ""
-    
-    # Inicializa lista de dirigentes
-    if "dirigenteseditor" not in st.session_state:
-        initiallist = getprefilledvalue(projectdataobj, {"datakey": "ata.listadirigenteseleitos"}) or []
-        st.session_state["dirigenteseditor"] = [dict(d) for d in initiallist] if isinstance(initiallist, list) else []
-    
-    # Inicializa campos extras
-    if "formnometecnicoresponsavel" not in st.session_state:
-        st.session_state["formnometecnicoresponsavel"] = ""
-    if "formcreatecnico" not in st.session_state:
-        st.session_state["formcreatecnico"] = ""
-    
-    st.session_state["forminitialized"] = True
-
-def cleareditorstate():
-    """Limpa todos os dados do formulário e do editor de dirigentes do sessionstate."""
-    if "dirigenteseditor" in st.session_state:
-        del st.session_state["dirigenteseditor"]
-    
-    for key in list(st.session_state.keys()):
-        if key.startswith("form"):
-            del st.session_state[key]
-
-def renderdirectoreditor():
-    """Renderiza a seção interativa para gerenciar a lista de dirigentes."""
-    reportconfig = projectmanager.getreportconfiguration()
-    st.markdown(f"**{reportconfig.get('dynamictables', [{}])[0].get('header')}**")
-    
-    for i, dirigente in enumerate(st.session_state["dirigenteseditor"]):
-        with st.container(border=True):
-            cols = st.columns([4, 4, 1])
-            dirigente["nome"] = cols[0].text_input("Nome Completo", value=dirigente.get("nome", ""), key=f"dirnome{i}")
-            dirigente["cargo"] = cols[1].text_input("Cargo", value=dirigente.get("cargo", ""), key=f"dircargo{i}")
-            
-            if cols[2].button("🗑️", key=f"removedir{i}", help="Remover Dirigente"):
-                st.session_state["dirigenteseditor"].pop(i)
-                st.rerun()
-    
-    if st.button("➕ Adicionar Dirigente", type="secondary"):
-        st.session_state["dirigenteseditor"].append({"nome": "", "cargo": ""})
-        st.rerun()
-
-def renderdraftgenerationscreen(projectdataobj: Any):
-    """Renderiza a tela para gerar o documento de rascunho (Etapa 1)."""
-    st.subheader("📝 Etapa 1: Gerar Documento para Assinatura")
-    
-    initializepersistentstate(projectdataobj)
-    
-    reportconfig = projectmanager.getreportconfiguration()
-    
-    # Renderiza campos do formulário
-    for table in reportconfig.get("tables", []):
-        st.markdown(f"**{table['header']}**")
-        for field in table.get("fields", []):
-            st.text_input(label=f"{field['label']}", key=f"form{field['id']}")
+    with open(package_path, "rb") as f:
+        st.download_button(
+            label="📥 Baixar Pacote de Requisição (.pdf)",
+            data=f,
+            file_name=os.path.basename(package_path),
+            mime="application/pdf",
+            use_container_width=True,
+            type="primary"
+        )
     
     st.divider()
-    
-    # Editor de dirigentes
-    renderdirectoreditor()
-    
-    st.divider()
-    
-    # Campos extras
-    st.markdown("**Outras Informações para o Documento**")
-    st.text_input("Nome do Técnico Responsável", key="formnometecnicoresponsavel")
-    st.text_input("CREA/CFT do Técnico", key="formcreatecnico")
-    
-    st.divider()
-    
-    if st.button("🚀 Gerar Documento para Assinatura", type="primary", use_container_width=True):
-        # Coleta dados do formulário
-        useroverrides = {key.replace("form", ""): st.session_state[key] for key in st.session_state if key.startswith("form") and key != "forminitialized"}
-        useroverrides["listadirigentesfinal"] = st.session_state["dirigenteseditor"]
-        
-        # Validação obrigatória
-        if not useroverrides.get("enderecoirradiante"):
-            st.error("❌ O campo 'Endereço de Instalação do Sistema Irradiante' é obrigatório.")
-        else:
-            with st.spinner("Gerando documento..."):
-                draftpath = projectmanager.generatedraftforsignature(currentproject, useroverrides)
-                
-                if draftpath:
-                    st.success("✅ Documento gerado com sucesso!")
-                    cleareditorstate()
-                    st.rerun()
-                else:
-                    st.error("❌ Falha ao gerar o documento.")
 
-def renderuploadsignedscreen(draftpath: str):
-    """Renderiza a tela para upload do documento assinado (Etapa 2)."""
-    st.subheader("✍️ Etapa 2: Obter Assinaturas e Fazer Upload")
-    
-    st.success("✅ O documento de requisição foi gerado.")
-    st.markdown("**Ação necessária:** Baixe o documento abaixo, obtenha todas as assinaturas necessárias e digitalize-o novamente como um único arquivo PDF.")
-    
-    with open(draftpath, "rb") as f:
-        st.download_button("📥 Baixar Documento para Assinatura (.pdf)", f, os.path.basename(draftpath), use_container_width=True)
-    
-    st.divider()
-    
-    uploadedfile = st.file_uploader("📤 Faça o upload do documento assinado aqui", type="pdf")
-    
-    if st.button("📨 Enviar Documento Assinado", disabled=not uploadedfile, type="primary", use_container_width=True):
-        if projectmanager.uploadsigneddocument(currentproject, uploadedfile):
-            st.toast("✅ Documento assinado salvo!")
-            st.rerun()
-        else:
-            st.error("❌ Falha ao salvar o documento.")
-
-def renderfinalassemblyscreen():
-    """Renderiza a tela para montar o pacote final (Etapa 3)."""
-    st.subheader("📦 Etapa 3: Montar Pacote Final")
-    
-    st.success("✅ Tudo pronto! O documento assinado foi recebido.")
-    st.markdown("Clique no botão abaixo para unir o requerimento assinado com todos os outros documentos do projeto (estatuto, atas, etc.) em um único arquivo PDF, pronto para ser protocolado.")
-    
-    if st.button("🔗 Montar Pacote Completo", type="primary", use_container_width=True):
-        with st.spinner("Unindo todos os documentos... Isso pode levar um momento."):
-            finalpackagepath = projectmanager.assemblefinalpackage(currentproject)
-            
-            if finalpackagepath:
-                st.session_state["finalpackagepath"] = finalpackagepath
+    with st.expander("⚠️ Opções Avançadas"):
+        st.warning("Atenção: A ação abaixo irá apagar permanentemente o arquivo gerado.")
+        if st.button("Apagar para Gerar Novamente", use_container_width=True):
+            ui_logger.info(f"Usuário solicitou a deleção do pacote existente para '{current_project}'.")
+            if project_manager.delete_exported_package(current_project):
+                st.toast("Arquivo apagado. Você já pode gerar um novo.")
                 st.rerun()
             else:
-                st.error("❌ Ocorreu um erro ao montar o pacote final.")
+                st.error("Ocorreu um erro ao apagar o arquivo.")
 
-def renderfinaldownloadscreen():
-    """Renderiza a tela final para baixar o pacote completo."""
-    st.balloons()
-    st.header("🎉 Pacote de Requisição Finalizado!")
+def render_generation_screen():
+    """Renderiza a tela para gerar um novo pacote (código da versão anterior)."""
+    # Verifica se o projeto está aprovado
+    all_criteria = project_manager.get_all_criteria()
+    project_data = project_manager.load_project(current_project)
+    results = project_data.criteria_results if project_data else []
+    results_map = {res['id']: res for res in results}
     
-    st.markdown("Seu dossiê completo está pronto para download.")
+    failed_criteria = [res for res in results if res.get('status') != 'Conforme']
+    pending_criteria = [c for c in all_criteria if c['id'] not in results_map]
+
+    if failed_criteria or pending_criteria:
+        st.error("🚫 **Projeto Ainda Não Aprovado para Exportação**")
+        # (Opcional: adicionar a lógica de render_approval_blocker aqui)
+        st.warning("Volte à página de 'Verificação de Critérios' e resolva todas as pendências.")
+        st.stop()
+
+    st.success("✅ **Projeto Aprovado!** Preencha os dados abaixo para gerar o pacote de requisição.")
     
-    finalpath = st.session_state["finalpackagepath"]
-    with open(finalpath, "rb") as f:
-        st.download_button("📥 Baixar Pacote Final Completo (.pdf)", f, os.path.basename(finalpath), "application/pdf", use_container_width=True, type="primary")
+    report_config = project_manager.get_report_configuration()
+    user_overrides = {}
+
+    with st.form("requisição_form"):
+        # (Lógica do formulário, igual à versão anterior)
+        st.subheader("📝 Preencha os Dados da Requisição")
+        for table in report_config.get('tables', []):
+            st.markdown(f"**{table['header']}**")
+            for field in table.get('fields', []):
+                if field.get('source') == 'user_input':
+                    user_overrides[field['id']] = st.text_input(label=field['label'], value=field.get('default', ''))
+            st.markdown("---")
+        user_overrides['nome_tecnico_responsavel'] = st.text_input("Nome do Técnico Responsável")
+        user_overrides['crea_tecnico'] = st.text_input("CREA/CFT do Técnico")
+        
+        submitted = st.form_submit_button("Gerar Pacote de Requisição", type="primary", use_container_width=True)
     
-    st.divider()
-    
-    if st.button("🔄 Resetar e Gerar Novo Pacote"):
-        projectmanager.deleteexportfiles(currentproject)
-        del st.session_state["finalpackagepath"]
-        cleareditorstate()
-        st.rerun()
+    if submitted:
+        with st.spinner("Gerando formulário e unindo documentos..."):
+            final_pdf_path = project_manager.export_project_package(current_project, user_overrides)
+        
+        if final_pdf_path:
+            st.balloons()
+            st.toast("Pacote gerado com sucesso!")
+            st.rerun()
+        else:
+            st.error("Ocorreu um erro ao gerar o pacote.")
 
-# 3. LÓGICA PRINCIPAL - MÁQUINA DE ESTADOS
+# ==============================================================================
+# 3. LÓGICA PRINCIPAL DA PÁGINA (If/Else)
+# ==============================================================================
 
-if not projectdata:
-    st.error("❌ Falha ao carregar os dados do projeto.")
-    st.stop()
+# Verifica se o pacote de exportação já existe.
+existing_package_path = project_manager.get_exported_package_path(current_project)
 
-# Verifica se o projeto está aprovado para exportação
-isapproved = not [res for res in results if res.get("status") != "Conforme"] and not [c for c in allcriteria if c["id"] not in resultsmap]
-
-if not isapproved and not projectmanager.getdraftdocumentpath(currentproject):
-    renderapprovalblock()
-
-# Determina o estado atual do fluxo de exportação
-draftpath = projectmanager.getdraftdocumentpath(currentproject)
-signedpath = projectmanager.getsigneddocumentpath(currentproject)
-finalpackagepath = st.session_state.get("finalpackagepath")
-
-# Renderiza a tela correta com base no estado
-if finalpackagepath and os.path.exists(finalpackagepath):
-    renderfinaldownloadscreen()
-elif not draftpath:
-    renderdraftgenerationscreen(projectdata)
-elif not signedpath:
-    renderuploadsignedscreen(draftpath)
+if existing_package_path:
+    # Se existe, mostra a tela de download.
+    render_download_screen(existing_package_path)
 else:
-    renderfinalassemblyscreen()
+    # Se não existe, mostra a tela de geração.
+    render_generation_screen()
