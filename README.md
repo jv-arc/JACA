@@ -1,6 +1,6 @@
 # JACA
 *Judicial Analysis & Compliance Application*
 
-An app that uses Gemini API to check legal compliance of documents, with optional consistency checks by the user with a final legal request generation.
+An AI App that checks legal compliance of documents and generates a final legal request, with optional consistency checks by the user.
 
-It's specially made to reduce work load of nonprofit community radio stations in Brazil for their license renewal 
+It was specially made to reduce work load of nonprofit community radio stations in Brazil for their process of license renewal 

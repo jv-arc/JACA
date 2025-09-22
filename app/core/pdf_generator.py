@@ -5,6 +5,7 @@ from typing import Dict, List, Optional, Any
 from fpdf import FPDF, XPos, YPos
 from app.core.logger import Logger
 from app.core.models import ProjectState
+from app.core.path_manager import PathManager
 
 class _DataResolver:
     def __init__(self, project_data: ProjectState, report_config: Dict, user_overrides: Dict, logger: Logger):
@@ -81,8 +82,8 @@ class PdfGenerator(FPDF):
         super().__init__()
         self.logger = logger
         self.set_auto_page_break(auto=True, margin=25)
-        self.add_font("DejaVu", "", "DejaVuSans.ttf")
-        self.add_font("DejaVu", "B", "DejaVuSans-Bold.ttf")
+        self.add_font("DejaVu", "", PathManager.get_asset_str("DejaVuSans.ttf"))
+        self.add_font("DejaVu", "B", PathManager.get_asset_str("DejaVuSans-Bold.ttf"))
 
     def header(self):
         self.set_font("DejaVu", "B", 10)

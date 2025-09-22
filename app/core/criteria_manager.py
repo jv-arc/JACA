@@ -27,15 +27,7 @@ class CriteriaManager:
 
 
     def load_criteria(self, db_path: str) -> List[Dict]:
-        """
-        Carrega as regras do arquivo JSON.
-
-        Args:
-            db_path (str): Caminho para o arquivo de critérios.
-
-        Returns:
-            List[Dict]: Lista de critérios carregados.
-        """
+        
         self.logger.info(f"Carregando critérios de {db_path}...")
         try:
             with open(db_path, "r", encoding="utf-8") as f:
@@ -49,11 +41,11 @@ class CriteriaManager:
             self.logger.error(f"Erro ao decodificar o JSON de critérios em {db_path}: {e}")
             return []
 
+
+
+
     def _gather_context_text(self, criterion: Dict, project_data: ProjectState) -> Optional[str]:
-        """
-        Coleta o texto de contexto para um critério.
-        VERSÃO MVP: Usa o `consolidated_text`, que é o campo editado pelo usuário.
-        """
+        
         context_parts = []
         source_docs = criterion.get("source_documents", [])
 
@@ -80,17 +72,12 @@ class CriteriaManager:
 
         return "\n\n---\n\n".join(context_parts)
 
+
+
+
+
     def _perform_single_check(self, criterion: Dict, project_data: ProjectState) -> Dict:
-        """
-        Executa a verificação para um único critério.
-
-        Args:
-            criterion (Dict): Critério a ser verificado.
-            project_data (ProjectState): Estado do projeto.
-
-        Returns:
-            Dict: Resultado da verificação.
-        """
+        
         criterion_id = criterion.get("id")
         self.logger.info(f"Executando verificação para o critério {criterion_id} - {criterion.get('title')}")
 
@@ -132,17 +119,8 @@ class CriteriaManager:
 
         return result
 
-    def run_all_checks(self,
-                       project_data: ProjectState) -> List[Dict]:
-        """
-        Executa todos os critérios de verificação para um determinado projeto.
+    def run_all_checks(self, project_data: ProjectState) -> List[Dict]:
 
-        Args:
-            project_data (ProjectState): O objeto de estado do projeto com os dados extraídos.
-
-        Returns:
-            List[Dict]: Lista de resultados de todas as verificações.
-        """
         if not self.criteria:
             self.logger.error("Nenhum critério carregado. Abortando verificação.")
             return []

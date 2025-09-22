@@ -10,24 +10,13 @@ from app.core.report_config_manager import ReportConfigManager
 
 
 class ExportManager:
-    """
-    Orquestra o processo completo de exportação, gerando o formulário
-    de requisição e unindo-o com os documentos do projeto.
-    """
+
     def __init__(
         self,
         logger: Logger,
         pdf_generator: PdfGenerator,
         report_config_manager: ReportConfigManager
     ):
-        """
-        Inicializa o ExportManager.
-
-        Args:
-            logger (Logger): A instância do logger.
-            pdf_generator (PdfGenerator): A instância do gerador de PDF.
-            report_config_manager (ReportConfigManager): O gerenciador da configuração do relatório.
-        """
         self.logger = logger
         self.pdf_generator = pdf_generator
         self.report_config_manager = report_config_manager
@@ -53,17 +42,7 @@ class ExportManager:
         user_overrides: Dict,
         export_dir: str
     ) -> str:
-        """
-        Gera o pacote completo de requisição em PDF.
-
-        Args:
-            project_data (ProjectState): Os dados completos do projeto.
-            user_overrides (Dict): Os valores preenchidos pelo usuário no formulário da UI.
-            export_dir (str): O diretório onde o arquivo final será salvo.
-
-        Returns:
-            str: O caminho para o arquivo PDF final e unificado.
-        """
+        
         project_name = project_data.name
         self.logger.info(f"Iniciando geração do pacote de exportação para o projeto '{project_name}'.")
 

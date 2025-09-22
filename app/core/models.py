@@ -25,7 +25,7 @@ class ProjectState(BaseModel):
     name: str
     path: Optional[str] = None 
     base_files: Dict = {}
-    extracted_data: ExtractedDataType = None
+    extracted_data: Optional[ExtractedDataType] = None
     criteria_results: Dict = {}
     current_step: int = 1 
     created_at: str

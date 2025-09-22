@@ -21,7 +21,7 @@ class PathManager:
         return PathManager.get_app_path() / "data"
 
 
-    #obtem o diretorio para o codigo da aplicacao "core" (/JACA/app/core)
+    # obtem o diretorio para o codigo da aplicacao "core" (/JACA/app/core)
     @staticmethod
     def get_core_dir() -> Path:
         return PathManager.get_app_path() / "core"
@@ -31,6 +31,9 @@ class PathManager:
     @staticmethod
     def get_ui_dir() -> Path:
         return PathManager.get_app_path() / "ui"
+
+
+
 
 
 
@@ -100,6 +103,8 @@ class PathManager:
 
 
 
+
+
 #================================================================
 # Metodos para obter os caminhos para arquivos de configuracao
 # da aplicacao (Em "data")
@@ -150,6 +155,9 @@ class PathManager:
 
 
 
+
+
+
 #================================================================
 # Obtem caminhos para arquivos nos projetos
 #================================================================
@@ -181,6 +189,47 @@ class PathManager:
         return PathManager.get_project_exports_dir(project_name) / f"REQUISICAO_{project_name}.pdf"
 
 
+
+
+
+
+
+#================================================================
+# Obtem caminhos para assets
+#================================================================
+
+    # Obtem caminho para diretorio de assets
+    @staticmethod
+    def get_assets_dir() -> Path:
+        return PathManager.get_app_path() / "assets"
+    
+    # Obtem arquivo especifico dentro do diretorio de assets
+    @staticmethod
+    def get_asset(asset_name: str) -> Path:
+        return PathManager.get_assets_dir() / asset_name
+
+
+    # Converte Path em string para acessibilidade 
+    @staticmethod
+    def get_asset_str(asset_name: str) -> str:
+        return str(PathManager.get_asset(asset_name))
+
+
+
+#================================================================
+# Caminhos da UI
+#================================================================
+
+    # Obtem caminho para diretorio de paginas
+    @staticmethod
+    def get_page_dir() -> Path:
+        return PathManager.get_ui_dir() / "pages"
+    
+    # Obtem caminho para uma pagina especifica no formato de string
+    @staticmethod
+    def get_page_str(page_name: str) -> str:
+        page_obj = PathManager.get_page_dir() / page_name
+        return str(page_obj)
 
 
 

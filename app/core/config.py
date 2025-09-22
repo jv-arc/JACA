@@ -1,8 +1,7 @@
-import os
 import json
+from app.core.path_manager import PathManager
 
-
-CONFIG_PATH = '../config/config.json'
+CONFIG_PATH = PathManager.get_app_config()
 
 class Settings:
 
@@ -14,27 +13,28 @@ class Settings:
         self.load_or_create_config()
 
     def load_or_create_config(self):
-        if not os.path.exists(CONFIG_PATH):
-            self.api_key = ''
-            self.extraction_model = "gemini-2.5-Flash"
-            self.criteria_model = "gemini-2.0-flash"
-            self.debug_mode = False
-            self.save_config()
-        else:
+        if CONFIG_PATH.exists(): 
             try:
-                with open(CONFIG_PATH, 'r') as f:
-                    data = json.load(f)
+                json_string = CONFIG_PATH.read_text()
+                data = json.loads(json_string)
+
                 self.api_key = data.get('api_key', '')
                 self.extraction_model = data.get('extraction_model', '')
                 self.criteria_model = data.get('criteria_model', '')
                 self.debug_mode = data.get('debug_mode', '')
+
             except (json.JSONDecodeError, FileNotFoundError):
                 self.api_key = ''
                 self.extraction_model = ''
                 self.criteria_model = ''
                 self.debug_mode = ''
                 self.save_config()
-
+        else:
+            self.api_key = ''
+            self.extraction_model = "gemini-2.5-Flash"
+            self.criteria_model = "gemini-2.0-flash"
+            self.debug_mode = False
+            self.save_config()
 
 
     def save_config(self):
@@ -44,10 +44,8 @@ class Settings:
             'criteria_model': self.criteria_model,
             'debug_mode': self.debug_mode
         }
-
-        os.makedirs(os.path.dirname(CONFIG_PATH), exist_ok=True)
-        with open(CONFIG_PATH, 'w') as f:
-            json.dump(data, f, indent=2)
+        json_string = json.dumps(data, indent=2)
+        CONFIG_PATH.write_text(json_string)
 
     def update_api_key(self, new_key):
         self.api_key = new_key

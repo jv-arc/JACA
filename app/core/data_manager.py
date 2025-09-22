@@ -205,9 +205,7 @@ class ExtractedDataManager:
         return "\n\n".join(useful_texts)
 
     def create_empty_extraction_data(self, category: str) -> StructuredExtraction:
-        """
-        Gera um objeto StructuredExtraction vazio para a categoria informada.
-        """
+        
         wf = self.WORKFLOWS.get(category, {})
         return StructuredExtraction(
             content_fields={f: "" for f in wf.get("content_fields", [])},
@@ -259,13 +257,12 @@ class ExtractedDataManager:
             return None
         
     def _consolidate_content_fields(self, content_fields: Dict[str, str]) -> str:
-        """Consolida campos úteis em texto único"""
+        
         # Remove campos vazios e consolida
         useful_texts = [value.strip() for value in content_fields.values() if value.strip()]
         return '\n\\n'.join(useful_texts)
                              
     def get_workflow_fields(self, category: str) -> Dict[str, List[str]]:
-        """Retorna campos do workflow para uma categoria"""
         return self.WORKFLOWS.get(category, self.WORKFLOWS['estatuto'])
 
 
@@ -283,15 +280,6 @@ class ExtractedDataManager:
         }
     
     def _extract_text_from_pdfs(self, file_paths: List[str]) -> str:
-            """
-            Lê o conteúdo de texto de uma lista de arquivos PDF.
-    
-            Args:
-                file_paths (List[str]): Lista de caminhos para os arquivos PDF.
-    
-            Returns:
-                str: O texto consolidado de todos os arquivos.
-            """
             consolidated_text = []
             for path in file_paths:
                 try:

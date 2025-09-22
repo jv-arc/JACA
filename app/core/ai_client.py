@@ -21,10 +21,6 @@ class GeminiClient:
     # Inicializa a classe criando e testando uma conexão 
     #---------------------------------------------------------------------------------
     def __init__(self, settings: Settings, logger: Logger):
-        if not settings.api_key:
-            self.logger.critical("API key do Gemini não foi fornecida.")
-            raise ValueError("A API key não pode ser vazia.")
-            
         self.settings = settings
         self.logger = logger
         self._is_configured = False

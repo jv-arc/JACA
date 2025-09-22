@@ -5,12 +5,6 @@ from dateutil.relativedelta import relativedelta
 from typing import Dict
 
 def extract_and_verify_mandate(text_ata: str, text_estatuto: str, gemini_client, prompt_manager, logger) -> Dict:
-    """
-    Processo híbrido para verificar a vigência do mandato.
-
-    1. Usa a IA para extrair as strings de data de duração e eleição.
-    2. Usa Python para calcular e verificar de forma determinística.
-    """
     logger.info("Iniciando verificação de vigência de mandato por processo híbrido...")
 
     # Monta o prompt específico para a extração de datas
