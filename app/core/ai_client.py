@@ -20,9 +20,9 @@ class GeminiClient:
     #---------------------------------------------------------------------------------
     # Inicializa a classe criando e testando uma conexão 
     #---------------------------------------------------------------------------------
-    def __init__(self, settings: Settings, logger: Logger):
-        self.settings = settings
-        self.logger = logger
+    def __init__(self):
+        self.settings = Settings()
+        self.logger = Logger("GeminiClient")
         self._is_configured = False
         
         if not self.settings.api_key:

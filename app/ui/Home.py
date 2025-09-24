@@ -1,78 +1,43 @@
 import streamlit as st
-import os
-import platform
-import subprocess
-from typing import List, Dict, Any
 
-
-from app.core.config import Settings
-from app.core.prompt_manager import PromptManager
 from app.core.ai_client import GeminiClient
-from app.core.data_manager import ExtractedDataManager
 from app.core.project_manager import ProjectManager
 from app.core.logger import Logger
-from app.core.criteria_manager import CriteriaManager
 from app.core.export_manager import ExportManager
-from app.core.pdf_generator import PdfGenerator
-from app.core.report_config_manager import ReportConfigManager
 from app.core.path_manager import PathManager
+from app.core.project_data_service import ProjectDataService
+from app.core.project_workflow_orchestrator import ProjectWorkflowOrchestrator
+from app.core.project_crud_service import ProjectCRUDService
+from app.core.project_file_manager import ProjectFileManager
+from app.core.project_configuration_service import ProjectConfigurationService
+from app.core.document_package_service import DocumentPackageService
 
 @st.cache_resource
 def initialize_services():
-    settings = Settings()
-    prompt_manager = PromptManager()
-    pm_logger = Logger(name='ProjectManager')
-    dm_logger = Logger(name='DataManager')
-    gc_logger = Logger(name='GeminiClient')
-    cm_logger = Logger(name='CriteriaManager')
-    em_logger = Logger(name='ExportManager')
-    pdf_logger = Logger(name='PdfGenerator')
-    rcm_logger = Logger(name='ReportConfigManager')
-    ui_logger = Logger(name='StreamlitUI')
+    ui_logger = Logger(name='Init-Home')
 
-    # Cliente da IA
-    gemini_client = GeminiClient(
-        settings=settings, 
-        logger=gc_logger
-    )
+    ai = GeminiClient()
 
-    # Manager de Extração
-    extraction_manager = ExtractedDataManager(
-        gemini_client=gemini_client,
-        prompt_manager=prompt_manager,
-        logger=dm_logger
-    )
+    crud = ProjectCRUDService()
+    file = ProjectFileManager()
+    path = PathManager()
+    export = ExportManager()
+    config = ProjectConfigurationService()
+    package = DocumentPackageService()
 
-    # Manager de Extração
-    criteria_manager = CriteriaManager(
-        gemini_client=gemini_client,
-        prompt_manager=prompt_manager,
-        logger=cm_logger
-    )
-
-     
-    report_config_manager = ReportConfigManager(
-        logger=rcm_logger
-    )
-
-    pdf_generator = PdfGenerator(
-        logger=pdf_logger
-    )
-
-    export_manager = ExportManager(
-        logger=em_logger,
-        pdf_generator=pdf_generator,
-        report_config_manager=report_config_manager
-    )
+    data = ProjectDataService(gemini_client=ai)
+    workflow = ProjectWorkflowOrchestrator(gemini_client=ai)
 
 
-    # Manager de Projeto
     project_manager = ProjectManager(
-        export_manager=export_manager,
-        extraction_manager=extraction_manager,
-        logger=pm_logger,
-        report_config_manager=report_config_manager,
-        criteria_manager=criteria_manager,
+        data_service = data,
+        workflow_orchestrator = workflow,
+        crud_service = crud,
+        file_manager = file,
+        path_manager = path,
+        export_manager = export,
+        config_service = config,
+        document_package_service = package 
     )
     
     ui_logger.info("✅ Aplicação iniciada e serviços carregados.")
@@ -80,7 +45,6 @@ def initialize_services():
     return {
             'project_manager': project_manager,
             'ui_logger': ui_logger,
-            'report_config_manager': report_config_manager
         }
 
 # Carrega os serviços

@@ -1,0 +1,78 @@
+2025-09-22 17:46:09,485 - GeminiClient - INFO - logger.py:46 - Cliente Gemini configurado com sucesso.
+2025-09-22 17:46:09,485 - DataManager - INFO - logger.py:46 - Self inicializado.
+2025-09-22 17:46:09,485 - CriteriaManager - INFO - logger.py:46 - Carregando critérios de src/criteria/criteriadatabase.json...
+2025-09-22 17:46:09,485 - CriteriaManager - ERROR - logger.py:52 - Arquivo de critérios não encontrado em src/criteria/criteriadatabase.json.
+2025-09-22 17:46:09,485 - ReportConfigManager - INFO - logger.py:46 - Carregando configuração de relatório de 'src/config/report_config.json'...
+2025-09-22 17:46:09,485 - ReportConfigManager - ERROR - logger.py:52 - CRÍTICO: Arquivo de configuração de relatório 'src/config/report_config.json' não encontrado.
+2025-09-22 17:46:09,525 - ExportManager - INFO - logger.py:46 - ExportManager inicializado.
+2025-09-24 13:34:42,662 - GeminiClient - INFO - logger.py:46 - Cliente Gemini configurado com sucesso.
+2025-09-24 13:34:42,662 - DataManager - INFO - logger.py:46 - Self inicializado.
+2025-09-24 13:34:42,662 - CriteriaManager - INFO - logger.py:46 - Carregando critérios de src/criteria/criteriadatabase.json...
+2025-09-24 13:34:42,662 - CriteriaManager - ERROR - logger.py:52 - Arquivo de critérios não encontrado em src/criteria/criteriadatabase.json.
+2025-09-24 13:34:42,662 - ReportConfigManager - INFO - logger.py:46 - Carregando configuração de relatório de 'src/config/report_config.json'...
+2025-09-24 13:34:42,662 - ReportConfigManager - ERROR - logger.py:52 - CRÍTICO: Arquivo de configuração de relatório 'src/config/report_config.json' não encontrado.
+2025-09-24 13:34:42,707 - ExportManager - INFO - logger.py:46 - ExportManager inicializado.
+2025-09-24 15:04:50,289 - GeminiClient - INFO - logger.py:46 - Cliente Gemini configurado com sucesso.
+2025-09-24 15:05:36,623 - GeminiClient - INFO - logger.py:46 - Cliente Gemini configurado com sucesso.
+2025-09-24 15:05:36,624 - ExtractedDataManager - INFO - logger.py:46 - Self inicializado.
+2025-09-24 15:05:36,624 - CriteriaManager - INFO - logger.py:46 - Carregando critérios de src/criteria/criteriadatabase.json...
+2025-09-24 15:05:36,624 - CriteriaManager - ERROR - logger.py:52 - Arquivo de critérios não encontrado em src/criteria/criteriadatabase.json.
+2025-09-24 15:05:36,624 - ReportConfigManager - INFO - logger.py:46 - Carregando configuração de relatório de 'src/config/report_config.json'...
+2025-09-24 15:05:36,624 - ReportConfigManager - ERROR - logger.py:52 - CRÍTICO: Arquivo de configuração de relatório 'src/config/report_config.json' não encontrado.
+2025-09-24 15:05:59,897 - GeminiClient - INFO - logger.py:46 - Cliente Gemini configurado com sucesso.
+2025-09-24 15:05:59,897 - ExtractedDataManager - INFO - logger.py:46 - Self inicializado.
+2025-09-24 15:05:59,897 - CriteriaManager - INFO - logger.py:46 - Carregando critérios de src/criteria/criteriadatabase.json...
+2025-09-24 15:05:59,897 - CriteriaManager - ERROR - logger.py:52 - Arquivo de critérios não encontrado em src/criteria/criteriadatabase.json.
+2025-09-24 15:05:59,897 - ReportConfigManager - INFO - logger.py:46 - Carregando configuração de relatório de 'src/config/report_config.json'...
+2025-09-24 15:05:59,897 - ReportConfigManager - ERROR - logger.py:52 - CRÍTICO: Arquivo de configuração de relatório 'src/config/report_config.json' não encontrado.
+2025-09-24 15:05:59,935 - DataManager - INFO - logger.py:46 - ExportManager inicializado.
+2025-09-24 15:06:34,394 - GeminiClient - INFO - logger.py:46 - Cliente Gemini configurado com sucesso.
+2025-09-24 15:06:34,394 - ExtractedDataManager - INFO - logger.py:46 - Self inicializado.
+2025-09-24 15:06:34,394 - CriteriaManager - INFO - logger.py:46 - Carregando critérios de src/criteria/criteriadatabase.json...
+2025-09-24 15:06:34,394 - CriteriaManager - ERROR - logger.py:52 - Arquivo de critérios não encontrado em src/criteria/criteriadatabase.json.
+2025-09-24 15:06:34,394 - ReportConfigManager - INFO - logger.py:46 - Carregando configuração de relatório de 'src/config/report_config.json'...
+2025-09-24 15:06:34,394 - ReportConfigManager - ERROR - logger.py:52 - CRÍTICO: Arquivo de configuração de relatório 'src/config/report_config.json' não encontrado.
+2025-09-24 15:06:34,433 - DataManager - INFO - logger.py:46 - ExportManager inicializado.
+2025-09-24 17:03:06,760 - GeminiClient - INFO - logger.py:49 - Cliente Gemini configurado com sucesso.
+2025-09-24 17:03:06,760 - ProjectCRUDService - INFO - logger.py:49 - Servico inicializado com sucesso.
+2025-09-24 17:03:06,760 - ProjectCRUDService - INFO - logger.py:49 - Servico inicializado com sucesso.
+2025-09-24 17:03:06,760 - ProjectFileManager - INFO - logger.py:49 - Serviço iniciado com suscesso.
+2025-09-24 17:03:06,800 - PdfGenerator - INFO - logger.py:49 - Classe inicializada com sucesso
+2025-09-24 17:03:06,800 - ReportConfigManager - INFO - logger.py:49 - Carregando configuração de relatório de '/home/jvctr/0/NOW/JACA/app/data/app_config.json'...
+2025-09-24 17:03:06,800 - ReportConfigManager - INFO - logger.py:49 - Configuração de relatório carregada com sucesso.
+2025-09-24 17:03:06,800 - ReportConfigManager - INFO - logger.py:49 - Classe inicializada corretamente
+2025-09-24 17:03:06,800 - ExportManager - INFO - logger.py:49 - ExportManager inicializado.
+2025-09-24 17:03:06,800 - ProjectCRUDService - INFO - logger.py:49 - Servico inicializado com sucesso.
+2025-09-24 17:03:06,800 - ReportConfigManager - INFO - logger.py:49 - Carregando configuração de relatório de '/home/jvctr/0/NOW/JACA/app/data/app_config.json'...
+2025-09-24 17:03:06,801 - ReportConfigManager - INFO - logger.py:49 - Configuração de relatório carregada com sucesso.
+2025-09-24 17:03:06,801 - ReportConfigManager - INFO - logger.py:49 - Classe inicializada corretamente
+2025-09-24 17:03:06,801 - ProjectConfigurationService - INFO - logger.py:49 - Serviço inicializado com sucesso
+2025-09-24 17:03:06,801 - ProjectCRUDService - INFO - logger.py:49 - Servico inicializado com sucesso.
+2025-09-24 17:03:06,844 - PdfGenerator - INFO - logger.py:49 - Classe inicializada com sucesso
+2025-09-24 17:03:06,844 - ReportConfigManager - INFO - logger.py:49 - Carregando configuração de relatório de '/home/jvctr/0/NOW/JACA/app/data/app_config.json'...
+2025-09-24 17:03:06,845 - ReportConfigManager - INFO - logger.py:49 - Configuração de relatório carregada com sucesso.
+2025-09-24 17:03:06,846 - ReportConfigManager - INFO - logger.py:49 - Classe inicializada corretamente
+2025-09-24 17:03:06,846 - ExportManager - INFO - logger.py:49 - ExportManager inicializado.
+2025-09-24 17:03:06,846 - DocumentPackageService - INFO - logger.py:49 - Serviço inicializado com sucesso
+2025-09-24 17:03:06,847 - ProjectCRUDService - INFO - logger.py:49 - Servico inicializado com sucesso.
+2025-09-24 17:03:06,848 - ExtractedDataManager - INFO - logger.py:49 - Classe inicializada com sucesso.
+2025-09-24 17:03:06,848 - ProjectDataService - INFO - logger.py:49 - Serviço inicializado com sucesso
+2025-09-24 17:03:06,848 - ExtractedDataManager - INFO - logger.py:49 - Classe inicializada com sucesso.
+2025-09-24 17:03:06,848 - CriteriaManager - INFO - logger.py:49 - Carregando critérios de /home/jvctr/0/NOW/JACA/app/data/criteria_database.json...
+2025-09-24 17:03:06,848 - CriteriaManager - INFO - logger.py:49 - 3 critérios carregados com sucesso.
+2025-09-24 17:03:06,848 - CriteriaManager - INFO - logger.py:49 - Serviço inicializado com sucesso
+2025-09-24 17:03:06,848 - ProjectCRUDService - INFO - logger.py:49 - Servico inicializado com sucesso.
+2025-09-24 17:03:06,848 - ExtractedDataManager - INFO - logger.py:49 - Classe inicializada com sucesso.
+2025-09-24 17:03:06,848 - ProjectDataService - INFO - logger.py:49 - Serviço inicializado com sucesso
+2025-09-24 17:03:06,848 - ProjectCRUDService - INFO - logger.py:49 - Servico inicializado com sucesso.
+2025-09-24 17:03:06,884 - PdfGenerator - INFO - logger.py:49 - Classe inicializada com sucesso
+2025-09-24 17:03:06,885 - ReportConfigManager - INFO - logger.py:49 - Carregando configuração de relatório de '/home/jvctr/0/NOW/JACA/app/data/app_config.json'...
+2025-09-24 17:03:06,885 - ReportConfigManager - INFO - logger.py:49 - Configuração de relatório carregada com sucesso.
+2025-09-24 17:03:06,885 - ReportConfigManager - INFO - logger.py:49 - Classe inicializada corretamente
+2025-09-24 17:03:06,885 - ExportManager - INFO - logger.py:49 - ExportManager inicializado.
+2025-09-24 17:03:06,885 - ReportConfigManager - INFO - logger.py:49 - Carregando configuração de relatório de '/home/jvctr/0/NOW/JACA/app/data/app_config.json'...
+2025-09-24 17:03:06,885 - ReportConfigManager - INFO - logger.py:49 - Configuração de relatório carregada com sucesso.
+2025-09-24 17:03:06,885 - ReportConfigManager - INFO - logger.py:49 - Classe inicializada corretamente
+2025-09-24 17:03:06,885 - ProjectWorkflowOrchestrator - INFO - logger.py:49 - Serviço de workflow inicializado com sucesso
+2025-09-24 17:03:06,885 - ProjectManager - INFO - logger.py:49 - ProjectManager inicializado corretamente
+2025-09-24 17:03:06,885 - Init-Home - INFO - logger.py:49 - ✅ Aplicação iniciada e serviços carregados.

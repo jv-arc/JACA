@@ -379,9 +379,8 @@ class ProjectManager:
             self.logger.error(f"Não foi possível carregar o projeto '{project_name}' para exportação.")
             return None
         
-        # b. Define o diretório de saída
         export_dir = self.project_exports_dir(project_name)
-        # c. Delega a geração e concatenação para o ExportManager
+
         try:
             final_pdf_path = self.export_manager.generate_full_package(
                 project_data=project_data,
@@ -396,20 +395,17 @@ class ProjectManager:
     def execute_criteria_verification(self, project_name: str) -> bool:
             self.logger.info(f"Iniciando orquestração da verificação de critérios para o projeto '{project_name}'.")
     
-            # a. Carrega todos os dados do projeto, incluindo as extrações
             project_data = self.load_project(project_name)
             if not project_data:
                 self.logger.error("Não foi possível carregar o projeto para iniciar a verificação de critérios.")
                 return False
             
-            # b. Delega a execução para o CriteriaManager
+            
             results = self.criteria_manager.run_all_checks(project_data)
             
             if not results:
                 self.logger.warning("A verificação de critérios não produziu resultados.")
-                # Pode ser um erro ou simplesmente não haver critérios, então continuamos para salvar o resultado vazio.
-            
-            # c. Salva os resultados obtidos
+                
             return self.update_criteria_results(project_name, results)
 
 

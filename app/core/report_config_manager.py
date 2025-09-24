@@ -2,21 +2,28 @@ import json
 from typing import Dict, List, Optional
 
 from app.core.logger import Logger
+from app.core.path_manager import PathManager
 
 class ReportConfigManager:
-    def __init__(
-        self,
-        logger: Logger,
-        config_path: str = 'src/config/report_config.json'
-    ):
-        self.logger = logger
-        self.config_path = config_path
+    def __init__(self):
+
+        self.logger = Logger(name="ReportConfigManager")
+        self.path = PathManager()
+        self.config_path = str(self.path.get_app_config())
         self.config_data: Dict = {}
-        self.load_config()
+        try:
+            self.load_config()
+            self.logger.info("Classe inicializada corretamente")
+        except:
+            self.logger.error("Erro ao inicializar a classe.")
+            
 
 
 
 
+    #---------------------------------------------------------------------------------
+    # Carrega configuracoes
+    #---------------------------------------------------------------------------------
     def load_config(self):
         self.logger.info(f"Carregando configuração de relatório de '{self.config_path}'...")
         try:
@@ -34,6 +41,9 @@ class ReportConfigManager:
 
 
 
+    #---------------------------------------------------------------------------------
+    # Salvar configuracoes
+    #---------------------------------------------------------------------------------
     def save_config(self, new_config_data: Dict) -> bool:
 
         self.logger.info(f"Salvando alterações na configuração de relatório em '{self.config_path}'...")
@@ -54,12 +64,18 @@ class ReportConfigManager:
 
 
 
+    #---------------------------------------------------------------------------------
+    # Obtem o Prompt de extracao de conteudo
+    #---------------------------------------------------------------------------------
 
     def get_full_config(self) -> Dict:
         return self.config_data
 
 
 
+    #---------------------------------------------------------------------------------
+    # Obtem o Prompt de extracao de conteudo
+    #---------------------------------------------------------------------------------
     def get_user_input_fields(self) -> List[Dict]:
         user_fields = []
         tables = self.config_data.get('tables', [])

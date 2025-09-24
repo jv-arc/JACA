@@ -11,9 +11,12 @@ from logging.handlers import RotatingFileHandler
     
 class Logger:
     
-    def __init__(self, name: str = "JACA-", level: int = logging.INFO, logfile: str = "/home/jvctr/0/NOW/JACA/app/core/log.txt"):
+    def __init__(self, name: str):
+        self.name = name
+        self.logfile = "/home/jvctr/0/NOW/JACA/app/core/log.txt"
         self.logger = logging.getLogger(name)
-        self.logger.setLevel(level)
+        self.logger.setLevel(logging.INFO)
+
         
         # Evita adicionar handlers duplicados se a instância for criada múltiplas vezes
         if not self.logger.handlers:
@@ -27,9 +30,9 @@ class Logger:
             self.logger.addHandler(stream_handler)
             
             # Handler para Arquivo (com rotação)
-            if logfile:
+            if self.logfile:
                 file_handler = RotatingFileHandler(
-                    logfile, 
+                    self.logfile, 
                     maxBytes=10*1024*1024,  # 10MB
                     backupCount=5
                 )

@@ -5,11 +5,14 @@ import docx  # python-docx
 from PIL import Image
 from datetime import datetime
 from typing import Optional, Dict, List
+from pathlib import Path
+
 
 from app.core.ai_client import GeminiClient
 from app.core.prompt_manager import PromptManager
 from app.core.logger import Logger
 from app.core.models import StructuredExtraction
+from app.core.path_manager import PathManager
 
 # Orquestra o processo de extração de dados de diferentes formatos de documentos,
 # preparando o conteúdo para análise por IA (texto ou multimodal).
@@ -60,16 +63,12 @@ class ExtractedDataManager:
     }
     
 
-    def __init__(
-        self,
-        gemini_client: GeminiClient,
-        prompt_manager: PromptManager,
-        logger: Logger
-    ):
+    def __init__(self, gemini_client: GeminiClient):
         self.gemini_client = gemini_client
-        self.prompt_manager = prompt_manager
-        self.logger = logger
-        self.logger.info("Self inicializado.")
+        self.prompt_manager = PromptManager()
+        self.path = PathManager
+        self.logger = Logger(name="ExtractedDataManager")
+        self.logger.info("Classe inicializada com sucesso.")
 
 
 
@@ -77,7 +76,7 @@ class ExtractedDataManager:
     def has_extracted_text(self, project_name: str, category: str) -> bool:
 
         try:
-            extracted_dir = self.project_manager.project_extracted_dir(project_name)
+            extracted_dir = self.path.get_project_extracted_dir(project_name)
             extracted_file = os.path.join(extracted_dir, f'{category}.json')
             if not os.path.exists(extracted_file):
                 return False
@@ -98,22 +97,23 @@ class ExtractedDataManager:
             return False
 
 
-    def _extract_content_from_files(self, file_paths: List[str]) -> Dict:
+    def _extract_content_from_files(self, file_paths: List[Path]) -> Dict:
         texts: List[str] = []
         images: List[Image.Image] = []
 
         for path in file_paths:
             self.logger.info(f"Processando arquivo {os.path.basename(path)}...")
             try:
-                if path.lower().endswith(".docx"):
-                    doc = docx.Document(path)
+                if path.suffix == ".docx":
+                    doc = docx.Document(str(path))
                     full_text = [p.text for p in doc.paragraphs if p.text.strip()]
                     texts.append("\n".join(full_text))
 
-                elif path.lower().endswith(".pdf"):
+                elif path.suffix == ".pdf":
                     pdf_doc = fitz.open(path)
                     has_text_content = False
-                    for page_num, page in enumerate(pdf_doc):
+                    for page_num in range(len(pdf_doc)):
+                        page = pdf_doc[page_num]
                         page_text = page.get_text()
                         if page_text.strip():
                             texts.append(page_text)
@@ -141,68 +141,71 @@ class ExtractedDataManager:
         return {"type": "empty", "content": None}
     
     # ===========================================================
-    # MÉTODO DE ORQUESTRAÇÃO DA EXTRAÇÃO (MODIFICADO)
+    # MÉTODO DE ORQUESTRAÇÃO DA EXTRAÇÃO
     # ===========================================================
 
+    def run_extraction(self, file_paths: List[Path], category: str) -> Optional[Dict]:
+        self.logger.info(f"Iniciando processo de extração para a categoria '{category}'.")
 
-    def run_extraction(self, file_paths: List[str], category: str) -> Optional[Dict]:
-            self.logger.info(f"Iniciando processo de extração para a categoria '{category}'.")
-    
-            if not file_paths:
-                self.logger.warning(f"Nenhum arquivo encontrado para a categoria '{category}'. Abortando extração.")
-                return None
-    
-            extracted_content = self._extract_content_from_files(file_paths)
-            
+        if not file_paths:
+            self.logger.warning(f"Nenhum arquivo encontrado para a categoria '{category}'. Abortando extração.")
+            return None
 
-            extracted_json = None
+        extracted_content = self._extract_content_from_files(file_paths)
+        extracted_json = None
+        workflow = self.WORKFLOWS.get(category, {})
+        model_name = self.gemini_client.settings.extraction_model
+
+        if extracted_content['type'] == 'text':
+            self.logger.info("Conteúdo de texto detectado. Usando o fluxo de extração textual.")
+            document_text = extracted_content['content']
+            prompt = self.prompt_manager.get_extraction_prompt(
+                category=category,
+                document_text=document_text,
+                content_fields=workflow.get('content_fields', []),
+                ignored_fields=workflow.get('ignored_fields', [])
+            )
+            extracted_json = self.gemini_client.generate_json_from_prompt(prompt, model_name)
+
+        elif extracted_content['type'] == 'images':
+            self.logger.info("Conteúdo de imagem detectado. O fluxo de extração multimodal será usado.")
+            prompt = self.prompt_manager.get_multimodal_extraction_prompt(
+                category=category,
+                content_fields=workflow.get('content_fields', []),
+                ignored_fields=workflow.get('ignored_fields', [])
+            )
+            images = extracted_content['content']
+
+            if extracted_content.get('auxiliary_text'):
+                prompt += "\n\n--- INFORMAÇÕES ADICIONAIS (TEXTO EXTRAÍDO) ---\n" + extracted_content['auxiliary_text']
+
+            extracted_json = self.gemini_client.generate_json_from_multimodal_prompt(
+                text_prompt=prompt,
+                images=images,
+                model_name=model_name
+            )
+
+        elif extracted_content['type'] == 'empty':
+            self.logger.error("Nenhum conteúdo (texto ou imagem) pôde ser extraído dos arquivos.")
+            return None
+        
+        if not extracted_json:
+            self.logger.error("Falha ao extrair dados. A resposta da IA foi nula ou inválida.")
+            return None
             
-            # 2. Decidir qual fluxo de IA usar
-            if extracted_content['type'] == 'text':
-                self.logger.info("Conteúdo de texto detectado. Usando o fluxo de extração textual.")
-                document_text = extracted_content['content']
-                workflow = self.WORKFLOWS.get(category, {})
-                prompt = self.prompt_manager.get_extraction_prompt(
-                    category=category,
-                    document_text=document_text,
-                    content_fields=workflow.get('content_fields', []),
-                    ignored_fields=workflow.get('ignored_fields', [])
-                )
-                model_name = self.gemini_client.settings.extraction_model
-                extracted_json = self.gemini_client.generate_json_from_prompt(prompt, model_name)
-            
-            elif extracted_content['type'] == 'images':
-                self.logger.info("Conteúdo de imagem detectado. O fluxo de extração multimodal será usado.")
-                prompt = self.prompt_manager.get_multimodal_extraction_prompt(
-                    category=category,
-                    content_fields=workflow.get('content_fields', []),
-                    ignored_fields=workflow.get('ignored_fields', [])
-                )
-                images = extracted_content['content']
-    
-                if extracted_content.get('auxiliary_text'):
-                    prompt += "\n\n--- INFORMAÇÕES ADICIONAIS (TEXTO EXTRAÍDO) ---\n" + extracted_content['auxiliary_text']
-    
-                extracted_json = self.gemini_client.generate_json_from_multimodal_prompt(
-                    text_prompt=prompt,
-                    images=images,
-                    model_name=model_name
-                )
-    
-            elif extracted_content['type'] == 'empty':
-                self.logger.error("Nenhum conteúdo (texto ou imagem) pôde ser extraído dos arquivos.")
-                return None
-            
-            if not extracted_json:
-                self.logger.error("Falha ao extrair dados. A resposta da IA foi nula ou inválida.")
-                return None
-                
-            self.logger.info("Extração da IA concluída. Retornando dados estruturados.")
-            return extracted_json
+        self.logger.info("Extração da IA concluída. Retornando dados estruturados.")
+        return extracted_json
+
+
+
 
     def consolidate_content_fields(self, contentfields: Dict[str, str]) -> str:
         useful_texts = [v.strip() for v in contentfields.values() if v and v.strip()]
         return "\n\n".join(useful_texts)
+
+
+
+
 
     def create_empty_extraction_data(self, category: str) -> StructuredExtraction:
         
@@ -222,7 +225,7 @@ class ExtractedDataManager:
     def save_extracted_text(self, project_name: str, category: str, text: str) -> bool:
 
         try:
-            extracted_dir = self.project_manager.project_extracted_dir(project_name)
+            extracted_dir = self.path.get_project_extracted_dir(project_name)
             extracted_file = os.path.join(extracted_dir, f'{category}.json')
             # Carrega dados existentes ou cria novos
             if os.path.exists(extracted_file):
@@ -245,7 +248,7 @@ class ExtractedDataManager:
     # Carrega texto consolidado para uma categoria
     def load_extracted_text(self, project_name: str, category: str) -> Optional[str]:
         try:
-            extracted_dir = self.project_manager.project_extracted_dir(project_name)
+            extracted_dir = self.path.get_project_extracted_dir(project_name)
             extracted_file = os.path.join(extracted_dir, f'{category}.json')
             if not os.path.exists(extracted_file):
                 return None

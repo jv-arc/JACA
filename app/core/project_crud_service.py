@@ -27,12 +27,11 @@ class ProjectCRUDService:
     def __init__(self):
         self.logger = Logger(name="ProjectCRUDService")
         
-        # garante que diretorio do projeto existe
-        projects_dir = PathManager.get_project_dir()
+        self.projects_dir = PathManager.get_project_dir()
+        if not self.projects_dir.is_dir():
+            self.projects_dir.mkdir(parents=True, exist_ok=True)
+            self.logger.warning(f"Diretorio de projetos não existe. Diretório '{self.projects_dir}' criado")
 
-        if not projects_dir.is_dir():
-            projects_dir.mkdir(parents=True, exist_ok=True)
-            self.logger.warning(f"Diretorio de projetos não existe. Diretório '{projects_dir}' criado")
         self.logger.info("Servico inicializado com sucesso.")
     
 
@@ -41,7 +40,7 @@ class ProjectCRUDService:
     #----------------------------------------------------------------
     # Cria projeto com estrutura de arquivos
     #----------------------------------------------------------------
-    def create_project(self, project_name: str, description: str = "") -> bool:
+    def create_project(self, project_name: str) -> bool:
         
         # valida nome do projeto
         if not PathManager.validate_project_name(project_name):
@@ -136,6 +135,7 @@ class ProjectCRUDService:
     
     
 
+
     #----------------------------------------------------------------
     # Salva Projeto e dados separadamente
     #----------------------------------------------------------------
@@ -224,13 +224,13 @@ class ProjectCRUDService:
     def list_projects(self) -> List[str]:
         
         projects = []
-        projects_dir = PathManager.get_project_dir()
+        self.projects_dir = PathManager.get_project_dir()
         
-        if not projects_dir.exists():
+        if not self.projects_dir.exists():
             return projects
         
         try:
-            for item in projects_dir.iterdir():
+            for item in self.projects_dir.iterdir():
                 if item.is_dir():
                     # Check if it has a valid project structure
                     project_json = item / "project.json"

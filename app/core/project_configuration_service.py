@@ -1,5 +1,5 @@
 import json
-from typing import Dict, Optional
+from typing import Dict, List, Optional
 from datetime import datetime
 
 from app.core.path_manager import PathManager
@@ -21,10 +21,10 @@ from app.core.report_config_manager import ReportConfigManager
 
 class ProjectConfigurationService:
 
-    def __init__(self, crud_service: ProjectCRUDService, report_config_manager: ReportConfigManager):
+    def __init__(self):
         self.logger = Logger("ProjectConfigurationService")
-        self.crud_service = crud_service
-        self.report_config_manager = report_config_manager
+        self.crud_service = ProjectCRUDService()
+        self.report_config_manager = ReportConfigManager()
         self.logger.info("Serviço inicializado com sucesso")
 
 

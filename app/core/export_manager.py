@@ -11,21 +11,18 @@ from app.core.report_config_manager import ReportConfigManager
 
 class ExportManager:
 
-    def __init__(
-        self,
-        logger: Logger,
-        pdf_generator: PdfGenerator,
-        report_config_manager: ReportConfigManager
-    ):
-        self.logger = logger
-        self.pdf_generator = pdf_generator
-        self.report_config_manager = report_config_manager
+    def __init__(self):
+        self.logger = Logger(name="ExportManager")
+        self.pdf_generator = PdfGenerator()
+        self.report_config_manager = ReportConfigManager()
         self.logger.info("ExportManager inicializado.")
 
+
+    #----------------------------------------------------------------
+    # Coleta uma lista de todos os caminhos de PDF originais do projeto.
+    #----------------------------------------------------------------
     def _get_project_source_pdfs(self, project_data: ProjectState) -> List[str]:
-        """
-        Coleta uma lista de todos os caminhos de PDF originais do projeto.
-        """
+        
         all_files = []
         if project_data and project_data.base_files:
             for category_files in project_data.base_files.values():
@@ -36,6 +33,15 @@ class ExportManager:
         self.logger.info(f"Encontrados {len(all_files)} arquivos PDF de origem no projeto.")
         return all_files
 
+
+
+
+
+
+
+    #----------------------------------------------------------------
+    # 
+    #----------------------------------------------------------------
     def generate_full_package(
         self,
         project_data: ProjectState,

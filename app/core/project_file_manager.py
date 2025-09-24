@@ -17,10 +17,9 @@ from app.core.project_crud_service import ProjectCRUDService
 
 class ProjectFileManager:
 
-    def __init__(self, crud_service: ProjectCRUDService):
+    def __init__(self):
         self.logger = Logger(name="ProjectFileManager")
-        self.crud_service = crud_service
-
+        self.crud_service = ProjectCRUDService()
         self.logger.info("Serviço iniciado com suscesso.")
 
 

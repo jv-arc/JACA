@@ -2,14 +2,14 @@ import json
 from typing import List, Dict, Optional
 
 from app.core.path_manager import PathManager
-from app.core.models import ProjectState, ExtractedDataType
 from app.core.logger import Logger
 from app.core.project_crud_service import ProjectCRUDService
 from app.core.data_manager import ExtractedDataManager
 from app.core.criteria_manager import CriteriaManager
 from app.core.export_manager import ExportManager
 from app.core.report_config_manager import ReportConfigManager
-
+from app.core.project_data_service import ProjectDataService
+from app.core.ai_client import GeminiClient
 
 
 
@@ -21,25 +21,22 @@ from app.core.report_config_manager import ReportConfigManager
 #================================================================
 
 
-
-
 class ProjectWorkflowOrchestrator:
 
-    def __init__(
-        self,
-        crud_service: ProjectCRUDService,
-        extraction_manager: ExtractedDataManager,
-        criteria_manager: CriteriaManager,
-        export_manager: ExportManager,
-        report_config_manager: ReportConfigManager
-    ):
-        self.logger = Logger("ProjectWorkflowOrchestrator")
-        self.crud_service = crud_service
-        self.extraction_manager = extraction_manager
-        self.criteria_manager = criteria_manager
-        self.export_manager = export_manager
-        self.report_config_manager = report_config_manager
-        self.logger.info("Serviço de workflow inicializado com sucesso")
+    def __init__(self, gemini_client: GeminiClient):
+        self.extract = ExtractedDataManager(gemini_client=gemini_client)
+        self.criteria = CriteriaManager(gemini_client=gemini_client)
+        self.data = ProjectDataService(gemini_client=gemini_client)
+
+        self.lgr = Logger("ProjectWorkflowOrchestrator")
+
+        self.crud = ProjectCRUDService()
+        self.export = ExportManager()
+        self.r_conf = ReportConfigManager()
+        self.path = PathManager
+        self.ai = gemini_client
+
+        self.lgr.info("Serviço de workflow inicializado com sucesso")
 
 
 
@@ -51,25 +48,26 @@ class ProjectWorkflowOrchestrator:
     #----------------------------------------------------------------
     # Orquestra extração de dados por categoria via AI
     #----------------------------------------------------------------
-    def run_extraction_for_category(self, project_name: str, category: str) -> Optional[Dict]:
-        self.logger.info(f"Iniciando extração para '{category}' em '{project_name}'.")
-        project = self.crud_service.load_project(project_name)
+    def run_extraction_for_category(self, project_name: str, category: str) -> bool:
+        self.lgr.info(f"Iniciando extração para '{category}' em '{project_name}'.")
+        project = self.crud.load_project(project_name)
         if not project:
-            self.logger.error("Projeto não encontrado.")
-            return None
+            self.lgr.error("Projeto não encontrado.")
+            return False
+
+        file_paths = self.path.get_files_in_category(project_name, category)
+        if not file_paths:
+            self.lgr.warning(f"Nenhum arquivo para extrair na categoria '{category}'.")
 
         # Executa extração estruturada
-        result = self.extraction_manager.extract_structured(
-            project_name, category, project.files.get(category, [])
-        )
-        if result:
-            # Salva no disco
-            self.extraction_manager.save_structured_extraction(
-                project_name, category,
-                result.get("content_fields", {}), result.get("ignored_fields", {})
-            )
-            self.logger.info(f"Extração para '{category}' concluída.")
-        return result
+        extracted_data = self.extract.run_extraction(file_paths, category)
+        if extracted_data == None:
+            self.lgr.error(f"O processo de extração para '{category}' não retornou dados.")
+            return False
+
+        self.lgr.info(f"Extração para '{category}' concluída.")
+        return self.data.save_structured_extraction(project_name, category, extracted_data)
+            
 
 
 
@@ -84,13 +82,13 @@ class ProjectWorkflowOrchestrator:
     #----------------------------------------------------------------
     # Orquestra extração secundária (campos específicos do texto bruto)
     #----------------------------------------------------------------
-    def run_secondary_extraction(self, project_name: str, fields: List[str]) -> Dict:
-        self.logger.info(f"Iniciando extração secundária em '{project_name}' para campos {fields}.")
+    def run_secondary_extraction(self, project_name: str, category: List[str]) -> Dict:
+        self.lgr.info(f"Iniciando extração secundária em '{project_name}' para categoria '{category}'.")
         raw_text = ""
         for category in fields:
-            part = self.extraction_manager.load_consolidated_text(project_name, category) or ""
+            part = self.extract.load_consolidated_text(project_name, category) or ""
             raw_text += part + "\n\n"
-        return self.extraction_manager.extract_fields(project_name, raw_text, fields)
+        return self.extract.extract_fields(project_name, raw_text, fields)
 
 
 
@@ -103,14 +101,14 @@ class ProjectWorkflowOrchestrator:
     # Executa todas as verificações de critérios para um projeto
     #----------------------------------------------------------------
     def execute_criteria_verification(self, project_name: str) -> Dict:
-        self.logger.info(f"Iniciando verificação de critérios para '{project_name}'.")
-        project = self.crud_service.load_project(project_name)
-        categories = self.criteria_manager.list_categories()
+        self.lgr.info(f"Iniciando verificação de critérios para '{project_name}'.")
+        project = self.crud.load_project(project_name)
+        categories = self.criteria.list_categories()
         all_results: Dict[str, Dict] = {}
 
         for category in categories:
             files = project.files.get(category, [])
-            results = self.criteria_manager.verify_all(
+            results = self.criteria.verify_all(
                 project_name, category, files
             )
             all_results[category] = results
@@ -120,7 +118,7 @@ class ProjectWorkflowOrchestrator:
         with open(criteria_path, "w", encoding="utf-8") as f:
             json.dump(all_results, f, indent=2, ensure_ascii=False)
 
-        self.logger.info("Verificação de critérios concluída.")
+        self.lgr.info("Verificação de critérios concluída.")
         return all_results
 
 
@@ -134,18 +132,24 @@ class ProjectWorkflowOrchestrator:
     #----------------------------------------------------------------
     # Executa verificação de um único critério
     #----------------------------------------------------------------
-    def execute_single_criterion_verification(
-        self, project_name: str, category: str, criterion_id: str
-    ) -> Dict:
-        self.logger.info(
-            f"Verificando critério '{criterion_id}' em '{category}' para '{project_name}'."
-        )
-        project = self.crud_service.load_project(project_name)
-        file_list = project.files.get(category, [])
-        result = self.criteria_manager.verify_single(
+    def execute_single_criterion_verification(self, project_name: str, criterion_id: str) -> Dict|None:
+        
+        self.lgr.info(f"Verificando critério '{criterion_id}' para '{project_name}'.")
+
+        file_list = self.get_all_criteria(project_name)
+        criterion_to_check = next((c for c in file_list if c['id']== criterion_id), None)
+
+        if not criterion_to_check:
+            self.lgr.error(f"Critério com ID '{criterion_id}' não encontrado na base de dados.")
+            return None
+        
+        self.projectfil
+
+        new_result = self.criteria._perform_single_check(criterion_to_check, project_data)
+        result = self.criteria.verify_single(
             project_name, category, criterion_id, file_list
         )
-        self.logger.info(f"Verificação de critério '{criterion_id}' concluída.")
+        self.lgr.info(f"Verificação de critério '{criterion_id}' concluída.")
         return result
 
 
@@ -160,15 +164,13 @@ class ProjectWorkflowOrchestrator:
     #----------------------------------------------------------------
     # Atualiza manualmente o status de um critério
     #----------------------------------------------------------------
-    def update_manual_override(
-        self, project_name: str, category: str, criterion_id: str, status: str, reason: str
-    ) -> bool:
-        self.logger.info(f"Atualizando override manual para '{criterion_id}'.")
-        updated = self.criteria_manager.override(
+    def update_manual_override(self, project_name: str, category: str, criterion_id: str, status: str, reason: str) -> bool:
+        self.lgr.info(f"Atualizando override manual para '{criterion_id}'.")
+        updated = self.criteria.override(
             project_name, category, criterion_id, status, reason
         )
         if updated:
-            self.logger.info("Override manual aplicado com sucesso.")
+            self.lgr.info("Override manual aplicado com sucesso.")
         return updated
 
 
@@ -189,7 +191,7 @@ class ProjectWorkflowOrchestrator:
             with open(criteria_path, "r", encoding="utf-8") as f:
                 return json.load(f)
         except Exception as e:
-            self.logger.error(f"Erro ao ler resultados de critérios: {e}")
+            self.lgr.error(f"Erro ao ler resultados de critérios: {e}")
             return {}
 
 
@@ -204,22 +206,22 @@ class ProjectWorkflowOrchestrator:
     # Orquestra exportação completa do projeto
     #----------------------------------------------------------------
     def export_project_package(self, project_name: str) -> Optional[str]:
-        self.logger.info(f"Iniciando exportação para '{project_name}'.")
-        project = self.crud_service.load_project(project_name)
+        self.lgr.info(f"Iniciando exportação para '{project_name}'.")
+        project = self.crud.load_project(project_name)
         if not project:
-            self.logger.error("Projeto não encontrado.")
+            self.lgr.error("Projeto não encontrado.")
             return None
 
         # Gera rascunho
-        draft_path = self.export_manager.generate_draft(
-            project_name, project, self.report_config_manager.load_config()
+        draft_path = self.export.generate_draft(
+            project_name, project, self.r_conf.load_config()
         )
 
         # Combina assinatura e anexos
-        final_path = self.export_manager.assemble_package(
+        final_path = self.export.assemble_package(
             project_name, draft_path, project.files.get("signed", [])
         )
-        self.logger.info(f"Exportação concluída em '{final_path}'.")
+        self.lgr.info(f"Exportação concluída em '{final_path}'.")
         return final_path
 
 
@@ -233,8 +235,8 @@ class ProjectWorkflowOrchestrator:
     # Valida conexão com a API externa (p.ex. Gemini)
     #----------------------------------------------------------------
     def test_api_connection(self) -> bool:
-        self.logger.info("Testando conexão com API externa.")
-        return self.extraction_manager.test_connection()
+        self.lgr.info("Testando conexão com API externa.")
+        return self.ai.test_connection()
 
 
 
@@ -245,9 +247,9 @@ class ProjectWorkflowOrchestrator:
     # Valida se o projeto está pronto para exportação
     #----------------------------------------------------------------
     def validate_project_readiness(self, project_name: str) -> Dict[str, bool]:
-        self.logger.info(f"Validando prontidão de '{project_name}'.")
+        self.lgr.info(f"Validando prontidão de '{project_name}'.")
         readiness: Dict[str, bool] = {}
         # Exemplo: verifica que ao menos uma extração e um critério foram executados
-        readiness["extracted"] = self.crud_service.load_project(project_name).extracted_data is not None
+        readiness["extracted"] = self.crud.load_project(project_name).extracted_data is not None
         readiness["criteria"] = bool(self.get_all_criteria(project_name))
         return readiness

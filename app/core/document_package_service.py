@@ -17,18 +17,11 @@ from app.core.export_manager import ExportManager
 
 class DocumentPackageService:
 
-    def __init__(
-        self,
-        crud_service: ProjectCRUDService,
-        export_manager: ExportManager
-    ):
+    def __init__(self):
         self.logger = Logger("DocumentPackageService")
-        self.crud_service = crud_service
-        self.export_manager = export_manager
+        self.crud_service = ProjectCRUDService()
+        self.export_manager = ExportManager()
         self.logger.info("Serviço inicializado com sucesso")
-
-
-
 
 
 

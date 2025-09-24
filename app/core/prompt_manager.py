@@ -15,10 +15,6 @@ class PromptManager:
   #---------------------------------------------------------------------------------
   # Obtem o Prompt de extracao de conteudo
   #---------------------------------------------------------------------------------
-  # Recebe a categoria em questão, o texto do qual queremos extrair dados,
-  # os campos a serem extraídos e os campos a serem ignorados.
-  # Retorna o prompt formatado pronto para o envio.
-  #---------------------------------------------------------------------------------
   def get_extraction_prompt(
     self, 
     category: str, 
@@ -89,6 +85,14 @@ Retorne **APENAS** um objeto JSON válido, sem nenhum texto ou explicação adic
   """
           return prompt_template.strip()
 
+
+
+
+
+
+  #---------------------------------------------------------------------------------
+  # Obtem o Prompt de extracao multimodal
+  #---------------------------------------------------------------------------------
   def get_multimodal_extraction_prompt(
       self, 
       category: str, 

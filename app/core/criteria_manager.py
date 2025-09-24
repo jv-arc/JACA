@@ -5,7 +5,7 @@ from app.core.ai_client import GeminiClient
 from app.core.prompt_manager import PromptManager
 from app.core.logger import Logger
 from app.core.models import ProjectState
-
+from app.core.path_manager import PathManager
 
 #======================================================================================================================
 # Responsável por carregar critérios de um arquivo JSON e executar a verificação de conformidade em dados de um projeto.
@@ -14,16 +14,18 @@ from app.core.models import ProjectState
 class CriteriaManager:
     
 
-    def __init__(self,
-                 gemini_client: GeminiClient,
-                 prompt_manager: PromptManager,
-                 logger: Logger,
-                 criteria_db_path: str = "src/criteria/criteriadatabase.json"):
+    def __init__(self, gemini_client: GeminiClient):
+        self.logger = Logger(name="CriteriaManager")
+        self.ai = gemini_client
+        self.prompt = PromptManager()
+        self.path = PathManager()
 
-        self.gemini_client = gemini_client
-        self.prompt_manager = prompt_manager
-        self.logger = logger
-        self.criteria = self.load_criteria(criteria_db_path)
+        criteria_database_path = str(self.path.get_criteria_database())
+        self.criteria = self.load_criteria(criteria_database_path)
+
+        self.logger.info("Serviço inicializado com sucesso")
+
+
 
 
     def load_criteria(self, db_path: str) -> List[Dict]:
@@ -98,14 +100,14 @@ class CriteriaManager:
             return result
 
         # 2. Montar o prompt
-        prompt = self.prompt_manager.get_criteria_check_prompt(
+        prompt = self.prompt.get_criteria_check_prompt(
             context_text=context_text,
             instruction=criterion.get("promptinstruction", "")
         )
 
         # 3. Executar a chamada à IA
-        model = self.gemini_client.settings.criteria_model
-        ai_response = self.gemini_client.generate_json_from_prompt(prompt, model)
+        model = self.ai.settings.criteria_model
+        ai_response = self.ai.generate_json_from_prompt(prompt, model)
 
         # 4. Processar a resposta da IA
         if ai_response and isinstance(ai_response, dict):

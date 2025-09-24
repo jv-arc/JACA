@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Any
 
 from app.core.logger import Logger
 from app.core.project_crud_service import ProjectCRUDService
@@ -8,26 +8,34 @@ from app.core.project_workflow_orchestrator import ProjectWorkflowOrchestrator
 from app.core.document_package_service import DocumentPackageService
 from app.core.project_configuration_service import ProjectConfigurationService
 from app.core.models import ProjectState
-
+from app.core.export_manager import ExportManager
+from app.core.path_manager import PathManager
 
 class ProjectManager:
+    
     def __init__(
-        self,
-        crud_service: ProjectCRUDService,
-        file_manager: ProjectFileManager,
+        self, 
         data_service: ProjectDataService,
-        workflow: ProjectWorkflowOrchestrator,
-        package_service: DocumentPackageService,
-        config_service: ProjectConfigurationService,
+        workflow_orchestrator: ProjectWorkflowOrchestrator,
+        crud_service : ProjectCRUDService,
+        file_manager : ProjectFileManager,
+        path_manager : PathManager,
+        export_manager : ExportManager,
+        config_service : ProjectConfigurationService,
+        document_package_service : DocumentPackageService
     ):
         self.logger = Logger("ProjectManager")
-        self.crud = crud_service
-        self.files = file_manager
+
         self.data = data_service
-        self.workflow = workflow
-        self.packages = package_service
+        self.workflow = workflow_orchestrator
+        self.crud = crud_service
+        self.file = file_manager
+        self.path = path_manager
+        self.export = export_manager,
         self.config = config_service
-        self.logger.info("ProjectManager initialized successfully")
+        self.packages = document_package_service
+        
+        self.logger.info("ProjectManager inicializado corretamente")
 
     # -----------------------
     # Project CRUD Methods
@@ -35,8 +43,9 @@ class ProjectManager:
     def list_projects(self) -> List[str]:
         return self.crud.list_projects()
 
-    def create_project(self, name: str, description: str = "") -> ProjectState:
-        return self.crud.create_project(name, description)
+    def create_project(self, name: str) -> Optional[ProjectState]:
+        self.crud.create_project(name)
+        return self.crud.load_project(name)
 
     def load_project(self, project_name: str) -> Optional[ProjectState]:
         return self.crud.load_project(project_name)
@@ -51,13 +60,13 @@ class ProjectManager:
     # File Management
     # -----------------------
     def add_file(self, project_name: str, file_path: str, category: str) -> bool:
-        return self.files.add_pdf_file(project_name, file_path, category)
+        return self.file.add_pdf_file(project_name, file_path, category)
 
     def remove_file(self, project_name: str, file_path: str) -> bool:
-        return self.files.remove_pdf_file(project_name, file_path)
+        return self.file.remove_pdf_file(project_name, file_path)
 
     def list_files(self, project_name: str) -> Dict[str, List[str]]:
-        return self.files.get_all_files(project_name)
+        return self.file.get_all_files(project_name)
 
     # -----------------------
     # Data & Extraction
@@ -65,7 +74,7 @@ class ProjectManager:
     def has_extracted_text(self, project_name: str) -> bool:
         return self.data.has_extracted_text(project_name)
 
-    def run_extraction(self, project_name: str, category: str) -> Dict:
+    def run_extraction(self, project_name: str, category: str) -> bool:
         return self.workflow.run_extraction_for_category(project_name, category)
 
     def load_structured_extraction(self, project_name: str, category: str) -> Optional[Dict]:
@@ -86,7 +95,7 @@ class ProjectManager:
     def get_pending_information(self, project_name: str) -> Dict[str, List[str]]:
         return self.data.get_pending_information(project_name)
 
-    def update_extraction_field(self, project_name: str, category: str, field: str, value: any) -> bool:
+    def update_extraction_field(self, project_name: str, category: str, field: str, value: Any) -> bool:
         return self.data.update_extraction_field(project_name, category, field, value)
 
     def mark_field_complete(self, project_name: str, category: str, field: str) -> bool:
@@ -107,25 +116,35 @@ class ProjectManager:
     def execute_single_criterion(self, project_name: str, criterion_id: str) -> Dict:
         return self.workflow.execute_single_criterion_verification(project_name, criterion_id)
 
-    def update_manual_override(self, project_name: str, criterion_id: str, status: str, reason: str) -> bool:
-        return self.workflow.update_manual_override(project_name, criterion_id, status, reason)
+    def update_manual_override(self, project_name: str, category: str, criterion_id: str, status: str, reason: str) -> bool:
+        return self.workflow.update_manual_override(project_name, category, criterion_id, status, reason)
+
+
 
     # -----------------------
     # Package & Export
     # -----------------------
-    def prepare_export(self, project_name: str) -> bool:
-        return self.workflow.prepare_project_for_export(project_name)
+    #def prepare_export(self, project_name: str) -> bool:
+    #    return self.workflow.prepare_project_for_export(project_name)
 
-    def export_package(self, project_name: str) -> str:
+    def export_package(self, project_name: str) -> Optional[str]:
         return self.workflow.export_project_package(project_name)
 
-    def get_export_path(self, project_name: str) -> str:
-        return self.packages.get_exported_package_path(project_name)
+    def get_export_path(self, project_name: str) -> str|None:
+        export_obj = self.path.get_export_package_path(project_name)
 
-    def generate_draft(self, project_name: str) -> str:
+        if not export_obj.exists():
+            export_path = str(export_obj)
+            self.logger.info(f"Pacote de exportacao ja existente encontrado em '{export_path}'")
+            return export_path
+
+        return None
+
+
+    def generate_draft(self, project_name: str) -> Optional[str]:
         return self.packages.generate_draft_for_signature(project_name)
 
-    def assemble_package(self, project_name: str) -> str:
+    def assemble_package(self, project_name: str) -> str|None:
         return self.packages.assemble_final_package(project_name)
 
     def delete_exports(self, project_name: str) -> bool:
@@ -137,5 +156,5 @@ class ProjectManager:
     def get_report_config(self, project_name: str) -> Dict:
         return self.config.get_report_configuration(project_name)
 
-    def save_report_config(self, project_name: str, config: Dict) -> bool:
-        return self.config.save_report_configuration(project_name, config)
+    def save_report_config(self, project_name: str, config_data: Dict) -> bool:
+        return self.config.save_report_configuration(config_data, project_name)

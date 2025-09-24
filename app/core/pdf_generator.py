@@ -7,17 +7,31 @@ from app.core.logger import Logger
 from app.core.models import ProjectState
 from app.core.path_manager import PathManager
 
+
+
+#================================================================
+# Classe com métodos para obter os dados para geração
+#================================================================
+
 class _DataResolver:
-    def __init__(self, project_data: ProjectState, report_config: Dict, user_overrides: Dict, logger: Logger):
+    def __init__(self, project_data: ProjectState, report_config: Dict, user_overrides: Dict):
         self.project_data = project_data
         self.report_config = report_config
         self.user_overrides = user_overrides
-        self.logger = logger
+        self.logger = Logger("DataResolver")
         self.resolved_cache = {}
-        self._prepare_dynamic_placeholders()
+        try:
+            self._prepare_dynamic_placeholders()
+            self.logger.info("Classe iniciada com sucesso.")
+        except:
+            self.logger.error("Erro ao inicializar a classe.")
 
+
+
+    #-----------------------------------------------------------
+    # Prepara placeholders que não dependem dos dados do projeto.
+    #-----------------------------------------------------------
     def _prepare_dynamic_placeholders(self):
-        """Prepara placeholders que não dependem dos dados do projeto."""
         self.resolved_cache['data_atual'] = datetime.now().strftime('%d de %B de %Y')
         self.resolved_cache['cidade_requerimento'] = self.get_value('municipio_transmissor').split('/')[0]
 
@@ -27,8 +41,11 @@ class _DataResolver:
         self.resolved_cache['crea_tecnico'] = self.get_value('crea_tecnico', "____________________")
 
 
+
+    #-----------------------------------------------------------
+    # Busca um dado com base na sua label
+    #-----------------------------------------------------------
     def get_value_from_config(self, field_label: str, default_override: Any = None) -> Any:
-        """Busca um valor com base na sua label na configuração."""
         all_tables = self.report_config.get('tables', [])
         for table in all_tables:
             for field in table.get('fields', []):
@@ -36,14 +53,13 @@ class _DataResolver:
                     return self.get_value(field.get('id') or field.get('data_key'), field.get('default'))
         return default_override or f"CAMPO '{field_label}' NÃO ENCONTRADO"
 
+
+
+
+    #-----------------------------------------------------------
+    # Busca Um valor qualquer
+    #-----------------------------------------------------------
     def get_value(self, key: str, default: Any = "Não informado") -> Any:
-        """
-        Obtém um valor na seguinte ordem de prioridade:
-        1. Cache de valores já resolvidos.
-        2. Input do usuário (`user_overrides`).
-        3. Dados extraídos do projeto (`project_data`).
-        4. Valor padrão (`default`).
-        """
         if key in self.resolved_cache:
             return self.resolved_cache[key]
 
@@ -65,25 +81,41 @@ class _DataResolver:
         
         # 3. Valor padrão
         return default
-        
+    
+
+
+
+    #---------------------------------------------------
+    # Substitui placeholders como {chave} no texto.
+    #--------------------------------------------------
     def format_text(self, text: str) -> str:
-        """Substitui placeholders como {chave} no texto."""
         placeholders = [p.strip('{}') for p in text.split() if p.startswith('{') and p.endswith('}')]
         for p in placeholders:
             resolved_value = str(self.get_value(p))
             text = text.replace(f'{{{p}}}', resolved_value)
         return text
 
+
+
+
+
+#================================================================
+# Gera o PDF da requisição, herdando de FPDF para customização.
+#================================================================
+
 class PdfGenerator(FPDF):
-    """
-    Gera o PDF da requisição, herdando de FPDF para customização.
-    """
-    def __init__(self, logger: Logger):
+    def __init__(self):
         super().__init__()
-        self.logger = logger
-        self.set_auto_page_break(auto=True, margin=25)
-        self.add_font("DejaVu", "", PathManager.get_asset_str("DejaVuSans.ttf"))
-        self.add_font("DejaVu", "B", PathManager.get_asset_str("DejaVuSans-Bold.ttf"))
+        self.logger = Logger(name="PdfGenerator")
+
+        try:
+            self.set_auto_page_break(auto=True, margin=25)
+            self.add_font("DejaVu", "", PathManager.get_asset_str("DejaVuSans.ttf"))
+            self.add_font("DejaVu", "B", PathManager.get_asset_str("DejaVuSans-Bold.ttf"))
+            self.logger.info("Classe inicializada com sucesso")
+        except:
+            self.logger.error("Erro ao inicializar a classe")
+
 
     def header(self):
         self.set_font("DejaVu", "B", 10)
@@ -128,19 +160,13 @@ class PdfGenerator(FPDF):
         self.multi_cell(0, 7, formatted_text, align='J', new_x=XPos.LMARGIN, new_y=YPos.NEXT)
         self.ln(10)
 
-    def create_request_pdf(
-        self,
-        project_data: ProjectState,
-        report_config: Dict,
-        user_overrides: Dict,
-        output_path: str
+    def create_request_pdf(self, project_data: ProjectState, report_config: Dict, user_overrides: Dict, output_path: str
     ) -> bool:
-        """
-        Método principal que cria e salva o PDF completo.
-        """
+        
+
         self.logger.info(f"Iniciando geração de PDF para '{output_path}'...")
         try:
-            resolver = _DataResolver(project_data, report_config, user_overrides, self.logger)
+            resolver = _DataResolver(project_data, report_config, user_overrides)
             self.set_title(report_config.get("request_title", "Requerimento"))
             self.add_page()
 

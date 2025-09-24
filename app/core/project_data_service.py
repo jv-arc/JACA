@@ -3,10 +3,11 @@ from typing import List, Dict, Optional
 from datetime import datetime
 
 from app.core.path_manager import PathManager
-from app.core.models import ProjectState
 from app.core.logger import Logger
 from app.core.project_crud_service import ProjectCRUDService
 from app.core.data_manager import ExtractedDataManager
+from app.core.ai_client import GeminiClient
+
 
 #================================================================
 # CLASSE: ProjectDataService
@@ -17,16 +18,17 @@ from app.core.data_manager import ExtractedDataManager
 
 
 
+
 class ProjectDataService:
 
 
-    def __init__(self, crud_service: ProjectCRUDService, extraction_manager: ExtractedDataManager):
+    def __init__(self, gemini_client: GeminiClient):
         self.logger = Logger("ProjectDataService")
-        self.crud_service = crud_service
-        self.extraction_manager = extraction_manager
+        self.crud_service = ProjectCRUDService()
+        self.extraction_manager = ExtractedDataManager(gemini_client=gemini_client)
         self.logger.info("Serviço inicializado com sucesso")
     
-
+    
 
     #----------------------------------------------------------------
     # Verifica se o arquivo JSON de extracao existe e tem dados extraidos
@@ -39,6 +41,7 @@ class ProjectDataService:
                 return True
         return False
     
+
 
 
 
@@ -68,6 +71,8 @@ class ProjectDataService:
             return False
 
     
+
+
     
 
 
@@ -106,6 +111,8 @@ class ProjectDataService:
 
     
 
+
+
     #----------------------------------------------------------------
     # Atualiza um campo específico de extracao
     #----------------------------------------------------------------
@@ -136,6 +143,8 @@ class ProjectDataService:
 
 
 
+
+
     #----------------------------------------------------------------
     # Salva texto consolidado editado
     #----------------------------------------------------------------
@@ -143,6 +152,9 @@ class ProjectDataService:
         data = self.load_structured_extraction(project_name, category)
         return data.get('consolidated_text', '') if data else None
         
+
+
+
 
 
 
@@ -195,12 +207,16 @@ class ProjectDataService:
 
 
 
+
+
     #----------------------------------------------------------------
     # Obtem os campos de extracao de dados
     #----------------------------------------------------------------
     def get_workflow_fields(self, category: str) -> List[str]:
         return self.extraction_manager.WORKFLOWS.get(category, [])
     
+
+
 
 
 
@@ -246,12 +262,16 @@ class ProjectDataService:
 
 
 
+
+
     #----------------------------------------------------------------
     # Marca campo como completo
     #----------------------------------------------------------------
     def mark_field_as_complete(self, project_name: str, category:str,  field: str) -> bool:
         return self.update_extraction_field(project_name, category, field, "")
     
+
+
 
 
 
@@ -273,6 +293,8 @@ class ProjectDataService:
         
         return self.crud_service.save_project(project_data)
     
+
+
 
 
 
