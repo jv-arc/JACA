@@ -1,6 +1,10 @@
 import streamlit as st
 import os
 
+
+pm = st.session_state.get("project_manager")
+project = st.session_state.get("project")
+
 # ==============================================================================
 # 1. INICIALIZAÇÃO E VERIFICAÇÃO DE ESTADO (sem alterações)
 # ==============================================================================

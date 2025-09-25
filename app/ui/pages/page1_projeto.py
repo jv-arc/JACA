@@ -4,22 +4,12 @@ import platform
 import subprocess
 from typing import List, Dict, Any
 
+#==============================================================================
+# Configuração básica da página
+#==============================================================================
 
-from app.core.config import Settings
-from app.core.prompt_manager import PromptManager
-from app.core.ai_client import GeminiClient
-from app.core.data_manager import ExtractedDataManager
-from app.core.project_manager import ProjectManager
-from app.core.logger import Logger
-from app.core.criteria_manager import CriteriaManager
-from app.core.export_manager import ExportManager
-from app.core.pdf_generator import PdfGenerator
-from app.core.report_config_manager import ReportConfigManager
-from app.core.path_manager import PathManager
-
-# ==============================================================================
-# 2. CONFIGURAÇÃO DA PÁGINA E FUNÇÕES UTILITÁRIAS
-# ==============================================================================
+pm = st.session_state.get("project_manager")
+project = st.session_state.get("current_project")
 
 st.set_page_config(
     page_title="JACA - Assistente de Outorga",
@@ -27,7 +17,13 @@ st.set_page_config(
     layout="centered"
 )
 
+# ==============================================================================
+# Funções utilitárias
+# ==============================================================================
+
+#-----------------------------------------------------------------
 # Abre um arquivo com o aplicativo padrão do sistema operacional.
+#-----------------------------------------------------------------
 def open_file_with_default_app(file_path: str):
     try:
         system = platform.system()
@@ -42,11 +38,11 @@ def open_file_with_default_app(file_path: str):
     except Exception as e:
         st.error(f"Erro ao abrir arquivo: {e}")
 
-# ==============================================================================
-# 3. FUNÇÕES DE RENDERIZAÇÃO DA UI (Para evitar repetição de código)
-# ==============================================================================
+
+#-----------------------------------------------------------------
+# Mostra a lista de arquivos de uma categoria com botões de ação.
+#-----------------------------------------------------------------
 def display_files_for_category(category_key: str, files: List[str], project_name: str):
-    """Mostra a lista de arquivos de uma categoria com botões de ação."""
     for i, file_path in enumerate(files):
         col1, col2, col3 = st.columns([4, 1, 1])
         with col1:
@@ -58,14 +54,17 @@ def display_files_for_category(category_key: str, files: List[str], project_name
                 open_file_with_default_app(file_path)
         with col3:
             if st.button("Remover", key=f"remove_{category_key}_{i}", type="secondary", use_container_width=True):
-                if project_manager.remove_pdf_file(project_name, file_path, category_key):
+                if pm.remove_pdf_file(project_name, file_path, category_key):
                     st.toast(f"Arquivo '{file_name}' removido.")
                     st.rerun()
                 else:
                     st.error("Falha ao remover o arquivo.")
 
+
+#-----------------------------------------------------------------
+# Renderiza uma seção completa de upload e listagem para uma categoria.
+#-----------------------------------------------------------------
 def render_category_uploader(category_config: Dict[str, Any], project_data: Any):
-    """Renderiza uma seção completa de upload e listagem para uma categoria."""
     st.markdown(f"### {category_config['title']}")
     st.caption(category_config['description'])
 
@@ -97,14 +96,18 @@ def render_category_uploader(category_config: Dict[str, Any], project_data: Any)
             success_count = 0
             for uploaded_file in files_to_upload:
                 if uploaded_file: # Garante que o arquivo não é None
-                    if project_manager.add_pdf_file(project_name, uploaded_file, category_key):
+                    if pm.add_pdf_file(project_name, uploaded_file, category_key):
                         success_count += 1
             if success_count > 0:
                 st.toast(f"{success_count} arquivo(s) adicionado(s) com sucesso!")
                 st.rerun()
 
+
+
 # ==============================================================================
-# 4. LÓGICA PRINCIPAL DA APLICAÇÃO
+# LÓGICA PRINCIPAL DA APLICAÇÃO
+# ------------------------------------------------------------------------------
+#
 # ==============================================================================
 st.title("🤖 Assistente de Outorga para Rádios Comunitárias")
 
@@ -129,8 +132,8 @@ if st.session_state.current_project:
     st.divider()
 
     # Carrega os dados do projeto UMA VEZ
-    project_manager.verify_and_fix_file_paths(project_name)
-    project_data = project_manager.load_project(project_name)
+    pm.verify_and_fix_file_paths(project_name)
+    project_data = pm.load_project(project_name)
 
     if not project_data:
         st.error("Falha fatal ao carregar o projeto. Tente novamente ou crie um novo.")
@@ -157,27 +160,23 @@ if st.session_state.current_project:
 else:
     st.markdown("### Selecione um projeto ou crie um novo para começar.")
     
-    # Seção para CRIAR um novo projeto
-    with st.form("new_project_form"):
-        new_project_name = st.text_input("Nome para o Novo Projeto")
-        submitted = st.form_submit_button("Criar Projeto", type="primary", use_container_width=True, disabled=not new_project_name)
-        if submitted:
-            if project_manager.create_project(new_project_name):
-                st.session_state.current_project = new_project_name
-                st.rerun()
-            else:
-                st.error(f"Um projeto com o nome '{new_project_name}' já existe.")
+    new_project_name = st.text_input("Nome para o Novo Projeto")
+    if st.button("Criar Projeto", type="primary", use_container_width=True, disabled=not new_project_name):
+        if pm.create_project(new_project_name):
+            st.session_state.current_project = new_project_name
+            st.rerun()
+        else:
+            st.error(f"Um projeto com o nome '{new_project_name}' já existe.")
+        st.divider()
 
-    st.divider()
-
-    # Seção para CARREGAR um projeto existente
-    existing_projects = project_manager.list_projects()
-    if existing_projects:
-        with st.form("load_project_form"):
-            selected_project = st.selectbox("Ou selecione um projeto existente", existing_projects)
-            submitted = st.form_submit_button("Carregar Projeto", use_container_width=True)
-            if submitted:
-                st.session_state.current_project = selected_project
-                st.rerun()
-    else:
-        st.info("Nenhum projeto encontrado. Crie seu primeiro projeto acima!")
+        # Seção para CARREGAR um projeto existente
+        existing_projects = pm.list_projects()
+        if existing_projects:
+            with st.form("load_project_form"):
+                selected_project = st.selectbox("Ou selecione um projeto existente", existing_projects)
+                submitted = st.form_submit_button("Carregar Projeto", use_container_width=True)
+                if submitted:
+                    st.session_state.current_project = selected_project
+                    st.rerun()
+        else:
+            st.info("Nenhum projeto encontrado. Crie seu primeiro projeto acima!")

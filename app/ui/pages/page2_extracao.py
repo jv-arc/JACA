@@ -1,81 +1,62 @@
 import streamlit as st
 import os
-from app.core.logger import Logger
-from app.core.config import Settings
-from app.core.prompt_manager import PromptManager
-from app.core.ai_client import GeminiClient
-from app.core.project_manager import ProjectManager
 
-# Inicialização dos serviços
-def initialize_services():
-    logger = Logger()
-    settings = Settings()
-    prompt_manager = PromptManager()
-    gemini_client = GeminiClient(settings, logger)
-    project_manager = ProjectManager(logger, settings, prompt_manager, gemini_client)
-    return logger, settings, prompt_manager, gemini_client, project_manager
 
-logger, settings, prompt_manager, gemini_client, project_manager = initialize_services()
+pm = st.session_state.get("project_manager")
+project = st.session_state.get("project")
 
-st.set_page_config(page_title="2. Extração de Texto", layout="wide")
-st.title("2. Extração de Texto")
 
-# Seleção de projeto
-projects = project_manager.list_projects()
-selected = st.selectbox("Selecione o projeto", projects)
-if not selected:
-    st.warning("Nenhum projeto selecionado.")
-    st.stop()
-project_manager.load_project(selected)
-
-# Upload de arquivos
-uploaded_files = st.file_uploader(
-    "Envie os arquivos PDF/DOCX para extração", type=["pdf", "docx"], accept_multiple_files=True
-)
-if uploaded_files:
-    if st.button("Iniciar Extração"):
-        with st.spinner("Extraindo texto bruto..."):
-            paths = []
-            for uf in uploaded_files:
-                save_path = os.path.join(project_manager.project_files_dir, selected, uf.name)
-                with open(save_path, "wb") as f:
-                    f.write(uf.getbuffer())
-                paths.append(save_path)
-            ok = project_manager.extract_raw_text(selected, paths)
-        if ok:
-            st.success("Texto extraído com sucesso!")
-        else:
-            st.error("Falha na extração de texto.")
-
-# Exibir texto consolidado e permitir edição
-categories = project_manager.get_categories(selected)
-for cat in categories:
-    st.subheader(f"Categoria: {cat}")
-    if project_manager.has_extracted_text(selected, cat):
-        text = project_manager.load_extracted_text(selected, cat)
-        edited = st.text_area(
-            label="Revise o texto extraído pela IA antes de prosseguir para verificação",
-            value=text,
-            height=300,
-            key=f"text_{cat}"
+    def render_editing_interface(category_key: str, category_info: dict, files: list):
+        """Renderiza a UI para quando os dados já foram extraídos."""
+        
+        # ... (código existente para carregar o texto e mostrar o st.expander com os arquivos) ...
+        
+        st.write("**Texto Consolidado (Revisável):**")
+        
+        edited_text = st.text_area(
+            label="Revise o texto extraído pela IA...",
+            value=project_manager.load_extracted_text(current_project, category_key),
+            height=300, # Altura reduzida para dar espaço ao novo editor
+            key=f"text_{category_key}"
         )
+        
+        # ... (código existente para os botões de Salvar e Re-extrair) ...
+    
+        # ===========================================================
+        # NOVA SEÇÃO: EDITOR DE DIRIGENTES (SÓ APARECE PARA A 'ATA')
+        # ===========================================================
 
-        cols = st.columns(3)
-        if cols[0].button("Salvar Alterações", key=f"save_{cat}"):
-            if project_manager.save_extracted_text(selected, cat, edited):
-                st.success("Texto editado salvo com sucesso.")
-            else:
-                st.error("Erro ao salvar edição.")
 
-        if cols[1].button("Re-extrair Texto", key=f"reextract_{cat}"):
-            with st.spinner("Re-extraindo texto..."):
-                if project_manager.run_extraction_for_category(selected, cat):
-                    st.success("Reextração concluída.")
+if category_key == 'ata':
+            st.divider()
+            st.subheader("👥 Dirigentes Extraídos")
+            st.caption("Verifique a lista extraída pela IA. Adicione, remova ou corrija nomes e cargos diretamente na tabela abaixo. As alterações aqui serão usadas no documento de exportação final.")
+    
+            project_data = project_manager.load_project(current_project)
+            
+            # Pega a lista de dirigentes dos content_fields da ata
+            dirigentes_list = []
+            if project_data.extracted_data.ata and project_data.extracted_data.ata.content_fields:
+                dirigentes_list = project_data.extracted_data.ata.content_fields.get('lista_dirigentes_eleitos', [])
+    
+            # Garante que o dado seja uma lista de dicionários
+            if not isinstance(dirigentes_list, list) or not all(isinstance(d, dict) for d in dirigentes_list):
+                st.warning("O formato da lista de dirigentes extraída não é válido. A edição está desabilitada.")
+                dirigentes_list = []
+                
+            edited_dirigentes = st.data_editor(
+                dirigentes_list,
+                num_rows="dynamic", # Permite ao usuário adicionar e apagar linhas
+                column_config={
+                    "nome": st.column_config.TextColumn("Nome Completo do Dirigente", required=True),
+                    "cargo": st.column_config.TextColumn("Cargo", required=True),
+                },
+                key="dirigentes_editor",
+                use_container_width=True
+            )
+    
+            if st.button("Salvar Lista de Dirigentes", key="save_dirigentes_list"):
+                if project_manager.update_director_list(current_project, edited_dirigentes):
+                    st.toast("✅ Lista de dirigentes atualizada com sucesso!", icon="👥")
                 else:
-                    st.error("Falha na reextração.")
-
-        if cols[2].button("Avançar para Verificação", key=f"next_{cat}"):
-            st.experimental_set_query_params(page="4_Verificação_de_Critérios")
-            st.experimental_rerun()
-    else:
-        st.info("Aguardando extração de texto para esta categoria.")
+                    st.error("Ocorreu um erro ao salvar a lista de dirigentes.")

@@ -1,6 +1,8 @@
 import streamlit as st
 import json
 
+pm = st.session_state.get("project_manager")
+
 # ==============================================================================
 # 1. INICIALIZAÇÃO E VERIFICAÇÃO DE ESTADO
 # ==============================================================================
@@ -17,8 +19,6 @@ if not all([project_manager, ui_logger]):
     st.stop()
 
 # Importa a classe Settings aqui para evitar importação circular no topo
-from src.config.settings import Settings
-settings = Settings()
 
 # ==============================================================================
 # 2. FUNÇÕES DE RENDERIZAÇÃO DA UI

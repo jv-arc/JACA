@@ -50,20 +50,22 @@ def initialize_services():
 # Carrega os serviços
 services = initialize_services()
 
-st.session_state['project_manager'] = services['project_manager']
-st.session_state['ui_logger'] = services['ui_logger']
 
-project_manager = st.session_state.get('project_manager')
-ui_logger = st.session_state.get('ui_logger')
+pm = services['project_manager']
+ui_log = services['ui_logger']
+
+st.session_state['project_manager'] = pm
+st.session_state['ui_logger'] = ui_log
 
 
-if 'project' not in st.session_state:
-    st.session_state['project'] = None
+
+if 'current_project' not in st.session_state:
+    st.session_state['current_project'] = None
 
 
 
 page1 = st.Page(PathManager.get_page_str('page1_projeto.py'), title="Projetos", icon="📡", default =True) 
-#...
+
 page5 = st.Page(PathManager.get_page_str('page5_configuracao.py'), title="Configuração", icon="⚙️") 
 page6 = st.Page(PathManager.get_page_str('page6_sobre.py'), title="Sobre", icon="ℹ️") 
 
@@ -71,7 +73,7 @@ page6 = st.Page(PathManager.get_page_str('page6_sobre.py'), title="Sobre", icon=
 pages = [page1, page5, page6]
 
 
-if st.session_state['project'] is not None:
+if st.session_state['current_project'] is not None:
     page2 = st.Page(PathManager.get_page_str('page2_extracao.py'), title="Extração de Texto", icon="📄") 
     page3 = st.Page(PathManager.get_page_str('page3_verificacao.py'), title="Verificação de Critérios", icon="✔️") 
     page4 = st.Page(PathManager.get_page_str('page4_exportacao.py'), title="Exportar Requisição", icon="🚀")

@@ -1,5 +1,10 @@
 import streamlit as st
 from typing import Dict, List
+
+
+pm = st.session_state.get("project_manager")
+project = st.session_state.get("project")
+
 # ==============================================================================
 # 1. INICIALIZAÇÃO E VERIFICAÇÃO DE ESTADO
 # ==============================================================================
