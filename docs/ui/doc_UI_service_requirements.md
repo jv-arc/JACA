@@ -2,11 +2,24 @@
 Lista completa de todos os métodos de app.core que a UI utiliza para realizar suas tarefas
 
 ## Página de Projeto (page1)
-- `load_project`: Usado para carregar o projeto para a sessão
-- `create_project`: Usado para criar um novo projeto
-- `list_projects`: Usado para listar projetos disponívies
-- `remove_file`: Usado para remover um arquivo de uma determinada categoria no projeto atual
-- `add_file`:Usado para adicionar um arquivo a uma determinada categoria no projeto atual
+**Carregamento dos Dados do Projeto**
+`load_project(project_name) -> ProjectData`: Usado para carregar o current_project da sessão para um dicionário project_data na página.
+
+
+**Criar Projeto Novo**
+`create_project(new_project_name) -> bool`: Usado para criar um novo projeto, retorna apenas um bool, não precisa retornar um projeto ou carregar um projeto porque a página lida com isso ao criar um projeto novo.
+
+
+**Listagem de Projetos**
+`list_projects() -> List`: Usado para listar projetos disponívies para serem carregados.
+
+**Remoção de Arquivos dentro da Lista por categoria**
+`remove_file(project_name, file_path)->bool`: Usado para remover um arquivo de uma determinada categoria no projeto atual. É utilizado dentro de um botão na função de renderização da lista de arquivos por categoria, será que precisava receber a categoria por segurança?
+
+**Adição de um novo arquivo dentro de uma categoria e de um projeto**
+`add_file(project_name, uploaded_file, category_key)->bool`:Usado para adicionar um arquivo a uma determinada categoria no projeto atual
+
+
 
 ## Página de Extração (page2)
 
