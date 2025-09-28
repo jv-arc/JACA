@@ -11,6 +11,12 @@ from app.core.models import ProjectState
 from app.core.export_manager import ExportManager
 from app.core.path_manager import PathManager
 
+#===========================================================
+# Classe: ProjectManager
+#-----------------------------------------------------------
+# Expoe os metodos e orchestracoes de multiplas classes para
+# a UI da aplicação como uma interface
+#===========================================================
 class ProjectManager:
     
     def __init__(
@@ -67,14 +73,21 @@ class ProjectManager:
 
     def list_files(self, project_name: str) -> Dict[str, List[str]]:
         return self.file.get_all_files(project_name)
+    
+    def list_files_in_category(self, project_name: str, category: str) -> List[str]:
+        return self.file.get_files_by_category(project_name, category)
+    
 
     # -----------------------
     # Data & Extraction
     # -----------------------
+    def has_extraction_for_category(self, project_name: str, category: str) -> bool:
+        return self.data.has_extraction_for_category(project_name, category)
+    
     def has_extracted_text(self, project_name: str) -> bool:
         return self.data.has_extracted_text(project_name)
 
-    def run_extraction(self, project_name: str, category: str) -> bool:
+    def run_extraction(self, project_name: str, category: str) -> Optional[Dict]:
         return self.workflow.run_extraction_for_category(project_name, category)
 
     def load_structured_extraction(self, project_name: str, category: str) -> Optional[Dict]:

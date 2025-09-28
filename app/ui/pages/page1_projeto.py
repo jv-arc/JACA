@@ -10,6 +10,7 @@ from typing import List, Dict, Any
 
 pm = st.session_state.get("project_manager")
 project = st.session_state.get("current_project")
+logger = st.session_state.get("ui_logger")
 
 st.set_page_config(
     page_title="JACA - Assistente de Outorga",
@@ -54,7 +55,7 @@ def display_files_for_category(category_key: str, files: List[str], project_name
                 open_file_with_default_app(file_path)
         with col3:
             if st.button("Remover", key=f"remove_{category_key}_{i}", type="secondary", use_container_width=True):
-                if pm.remove_pdf_file(project_name, file_path, category_key):
+                if pm.remove_file(project_name, file_path):
                     st.toast(f"Arquivo '{file_name}' removido.")
                     st.rerun()
                 else:
@@ -96,7 +97,7 @@ def render_category_uploader(category_config: Dict[str, Any], project_data: Any)
             success_count = 0
             for uploaded_file in files_to_upload:
                 if uploaded_file: # Garante que o arquivo não é None
-                    if pm.add_pdf_file(project_name, uploaded_file, category_key):
+                    if pm.add_file(project_name, uploaded_file, category_key):
                         success_count += 1
             if success_count > 0:
                 st.toast(f"{success_count} arquivo(s) adicionado(s) com sucesso!")
@@ -109,7 +110,7 @@ def render_category_uploader(category_config: Dict[str, Any], project_data: Any)
 # ------------------------------------------------------------------------------
 #
 # ==============================================================================
-st.title("🤖 Assistente de Outorga para Rádios Comunitárias")
+st.title("Assistente de Outorga para Rádios Comunitárias")
 
 # Garante que a sessão está inicializada
 if 'current_project' not in st.session_state:
@@ -132,7 +133,6 @@ if st.session_state.current_project:
     st.divider()
 
     # Carrega os dados do projeto UMA VEZ
-    pm.verify_and_fix_file_paths(project_name)
     project_data = pm.load_project(project_name)
 
     if not project_data:
@@ -167,16 +167,16 @@ else:
             st.rerun()
         else:
             st.error(f"Um projeto com o nome '{new_project_name}' já existe.")
-        st.divider()
+    st.divider()
 
-        # Seção para CARREGAR um projeto existente
-        existing_projects = pm.list_projects()
-        if existing_projects:
-            with st.form("load_project_form"):
-                selected_project = st.selectbox("Ou selecione um projeto existente", existing_projects)
-                submitted = st.form_submit_button("Carregar Projeto", use_container_width=True)
-                if submitted:
-                    st.session_state.current_project = selected_project
-                    st.rerun()
-        else:
-            st.info("Nenhum projeto encontrado. Crie seu primeiro projeto acima!")
+    # Seção para CARREGAR um projeto existente
+    existing_projects = pm.list_projects()
+    if existing_projects:
+        with st.form("load_project_form"):
+            selected_project = st.selectbox("Ou selecione um projeto existente", existing_projects)
+            submitted = st.form_submit_button("Carregar Projeto", use_container_width=True)
+            if submitted:
+                st.session_state.current_project = selected_project
+                st.rerun()
+    else:
+        st.info("Nenhum projeto encontrado. Crie seu primeiro projeto acima!")

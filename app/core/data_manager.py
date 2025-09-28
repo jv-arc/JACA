@@ -100,16 +100,18 @@ class ExtractedDataManager:
     def _extract_content_from_files(self, file_paths: List[Path]) -> Dict:
         texts: List[str] = []
         images: List[Image.Image] = []
+        docx_endings = [".docx", ".DOCX"]
+        pdf_endings = [".pdf", ".PDF"]
 
         for path in file_paths:
             self.logger.info(f"Processando arquivo {os.path.basename(path)}...")
             try:
-                if path.suffix == ".docx":
+                if path.suffix in docx_endings:
                     doc = docx.Document(str(path))
                     full_text = [p.text for p in doc.paragraphs if p.text.strip()]
                     texts.append("\n".join(full_text))
 
-                elif path.suffix == ".pdf":
+                elif path.suffix in pdf_endings:
                     pdf_doc = fitz.open(path)
                     has_text_content = False
                     for page_num in range(len(pdf_doc)):
@@ -294,3 +296,15 @@ class ExtractedDataManager:
                     self.logger.error(f"Não foi possível ler o arquivo PDF '{path}'. Erro: {e}")
             
             return "\n\n".join(consolidated_text)
+    
+
+    def save_dict_to_file(self, project_name: str, category:str, data: Dict) -> bool:
+        file_obj = self.path.get_extracted_file_path(project_name, category)
+        
+        try: 
+            file_obj.write_text(json.dump(data))
+            self.logger.info(f"Dados ds categoria '{category}' para projeto '{project_name}' escritos.")
+            return True
+        except Exception as e:
+            self.logger.error(f"Erro ao escrever dados de categoria '{category}' em '{file_obj}' para projeto '{project_name}': \n\n {e}")
+            return False

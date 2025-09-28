@@ -64,7 +64,7 @@ class GeminiClient:
                 return None
 
         except Exception as e:
-            self.logger.error(f"Erro durante a chamada para a API Gemini: {e}", exc_info=True)
+            self.logger.error(f"Erro durante a chamada para a API Gemini: \n\n {e}", exc_info=True)
             return None
 
     #---------------------------------------------------------------------------------

@@ -104,12 +104,18 @@ class ProjectDataService:
         content_fields = data.get('content_fields', {})
         ignored_fields = data.get('ignored_fields', {})
 
-        return self.extraction_manager.save_structured_extraction(
-            project_name, category, content_fields, ignored_fields
-        )
-
+        final_data_obj = {
+            'content_fields': content_fields,
+            'ignored_fields': ignored_fields,
+            'consolidated_text': self.extraction_manager.consolidate_content_fields(content),
+            'workflow_used': category,
+            'extracted_at': datetime.now().isoformat(),
+            'last_modified': datetime.now().isoformat(),
+            'reviewed': False
+        }
 
     
+        return self.extraction_manager.save_dict_to_file
 
 
 

@@ -48,12 +48,12 @@ class ProjectWorkflowOrchestrator:
     #----------------------------------------------------------------
     # Orquestra extração de dados por categoria via AI
     #----------------------------------------------------------------
-    def run_extraction_for_category(self, project_name: str, category: str) -> bool:
+    def run_extraction_for_category(self, project_name: str, category: str) -> Optional[Dict]:
         self.lgr.info(f"Iniciando extração para '{category}' em '{project_name}'.")
         project = self.crud.load_project(project_name)
         if not project:
             self.lgr.error("Projeto não encontrado.")
-            return False
+            return None
 
         file_paths = self.path.get_files_in_category(project_name, category)
         if not file_paths:
@@ -63,10 +63,11 @@ class ProjectWorkflowOrchestrator:
         extracted_data = self.extract.run_extraction(file_paths, category)
         if extracted_data == None:
             self.lgr.error(f"O processo de extração para '{category}' não retornou dados.")
-            return False
+            return None
 
         self.lgr.info(f"Extração para '{category}' concluída.")
-        return self.data.save_structured_extraction(project_name, category, extracted_data)
+        if  self.data.save_structured_extraction(project_name, category, extracted_data):
+            return extracted_data
             
 
 
