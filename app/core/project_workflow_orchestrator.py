@@ -11,7 +11,7 @@ from app.core.project_data_service import ProjectDataService
 from app.core.prompt_manager import PromptManager
 from app.core.ai_client import GeminiClient
 from app.core.logger import Logger
-
+from app.core.config import Settings
 
 #================================================================
 # CLASS: ProjectWorkflowOrchestrator
@@ -32,14 +32,12 @@ class ProjectWorkflowOrchestrator:
         self.prompt = PromptManager()
         self.crud = ProjectCRUDService()
         self.export = ExportManager()
-        self.r_conf = ReportConfigManager()
+        self.report = ReportConfigManager()
         self.path = PathManager
         self.ai = gemini_client
+        self.conf = Settings()
 
         self.logger.info("Serviço de workflow inicializado com sucesso")
-
-
-
 
 
 
@@ -48,27 +46,54 @@ class ProjectWorkflowOrchestrator:
     #----------------------------------------------------------------
     # Orquestra extração de dados por categoria via AI
     #----------------------------------------------------------------
-    def run_extraction_for_category(self, project_name: str, category: str) -> Optional[Dict]:
-        self.logger.info(f"Iniciando extração para '{category}' em '{project_name}'.")
+
+    def run_text_consolidation_for_category(self, project_name:str, category:str) -> bool:
+        
+        # verificacao do nome do projeto
+        self.logger.info(f"Iniciando extração primária para '{category}' em '{project_name}'.")
+        if not self.path.validate_project_name(project_name):
+            self.logger.error(f"Projeto {project_name} inválido.")
+            return False
+        
+        # carregar dados do projeto
         project = self.crud.load_project(project_name)
         if not project:
-            self.logger.error("Projeto não encontrado.")
-            return None
+            self.logger.error(f"Erro ao carregar projeto {project_name}.")
+            return False
+        
+        # obter arquivos 
+        paths = PathManager.get_files_in_category(project_name, category)
+        if not paths:
+            self.logger.error(f"Erro ao obter caminhos para arquivos da categoria {category} para projeto {project_name}.")
+            return False
 
-        file_paths = self.path.get_files_in_category(project_name, category)
-        if not file_paths:
-            self.logger.warning(f"Nenhum arquivo para extrair na categoria '{category}'.")
+        # obtem texto
+        raw = self.extract._extract_content_from_files(paths)
+        if raw["type"] == "empty":
+            self.logger.error(f"Nenhum conteúdo extraído para os arquivos {paths}")
+            return False
+        
+        # constroi prompt para extracao de texto
+        if raw["type"] == "text":
+            prompt = self.prompt.get_text_consolidation_prompt(raw["content"])
+            text = self.ai.generate_text_from_prompt(prompt, raw["content"])
+        else:
+            prompt = self.prompt.get_multimodal_extraction_prompt(raw["content"])
+            text = self.ai.generate_text_from_multimodal_prompt(prompt, raw["content"])
 
-        # Executa extração estruturada
-        extracted_data = self.extract.run_extraction(file_paths, category)
-        if extracted_data == None:
-            self.logger.error(f"O processo de extração para '{category}' não retornou dados.")
-            return None
+        if not text:
+            self.logger.error("Obtenção de textos falhou")
+            return False
 
-        self.logger.info(f"Extração para '{category}' concluída.")
-        if  self.data.save_structured_extraction(project_name, category, extracted_data):
-            return extracted_data
-            
+        succes = self.data.save_extracted_text(project_name, category, text)
+        return succes
+
+
+
+
+
+
+
 
 
 
@@ -79,7 +104,7 @@ class ProjectWorkflowOrchestrator:
     #----------------------------------------------------------------
     # Orquestra extração secundária campos do texto salvo pelo usuario
     #----------------------------------------------------------------
-    def run_secondary_extraction(self, project_name: str, category: str) -> bool:
+    def run_secondary_extraction_for_category(self, project_name: str, category: str) -> bool:
         self.logger.info(f"Iniciando extração secundária em '{project_name}' para categoria '{category}'.")
         
         try:
@@ -91,15 +116,19 @@ class ProjectWorkflowOrchestrator:
         consolidated_text = self.data.load_consolidated_text(project_name, category)
         if not consolidated_text:
             self.logger.warning(f"Texto consolidado para '{category}' não disponível. Pulando extração secundária.")
-            return True            
+            return True
+        
         prompt = None
 
         if category == 'ata':
             prompt = self.prompt.get_ata_director_extraction_prompt()
         elif category == 'identificacao':
             prompt = self.prompt.get_id_document_extraction_prommpt()
-        else:
-            report_config = self.get_report_configuration()
+
+
+        else: # -- Determina campos para extracao se nao e nem ata e nem identificacao --
+            report_config = self.report.get_report_configuration()
+
             fields_to_extract = []
             for table in report_config.get('tables', []):
                 for field in table.get('fields', []):
@@ -114,24 +143,23 @@ class ProjectWorkflowOrchestrator:
 
         # Executa a chamada à IA
         full_prompt = prompt + "\n\n--- TEXTO PARA ANÁLISE ---\n" + consolidated_text
-        extracted_fields = self.gemini_client.generate_json_from_prompt(
-            full_prompt, self.gemini_client.settings.extraction_model
+        extracted = self.ai.generate_json_from_prompt(
+            full_prompt, self.ai.extraction_model()
         )
 
-        if not extracted_fields:
+        if not extracted:
             self.logger.error(f"A extração secundária para '{category}' não retornou dados.")
             return False
 
+
         # Atualiza os 'content_fields' com os novos dados e salva o projeto
-
-        doc_data_dict = self.data.get_extracted_data(project_name, category)
-        if 'content_fields' not in doc_data_dict or doc_data_dict['content_fields'] is None:
-            doc_data_dict['content_fields'] = {}
-
-        doc_data_dict['content_fields'].update(extracted_fields)
-        setattr(project_data.extracted_data, category, doc_data_dict)
-
-        return self.save_project(project_data)
+        data_dict = self.data.load_structured_extraction(project_name, category)
+        if not data_dict:
+            self.logger.error("Por alguma razao os dados de extracao foram carregados antes mas nao agora...")
+            return False
+        
+        data_dict.setdefault("content_fields", {}).update(extracted)
+        return self.data.save_structured_extraction(project_name, category, data_dict)
 
 
 
@@ -254,7 +282,7 @@ class ProjectWorkflowOrchestrator:
 
         # Gera rascunho
         draft_path = self.export.generate_draft(
-            project_name, project, self.r_conf.load_config()
+            project_name, project, self.report.load_config()
         )
 
         # Combina assinatura e anexos

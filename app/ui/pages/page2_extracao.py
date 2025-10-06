@@ -71,7 +71,7 @@ def handle_save_and_extract_fields(category_key: str, edited_text: str) -> bool:
 #---------------------------------------------------------------
 # Renderiza a UI para quando a extração ainda não foi feita.
 #---------------------------------------------------------------
-def render_extraction_interface(category_key: str, category_info: Dict, files: List):
+def render_extraction_interface(project_name:str, category_key: str, category_info: Dict, files: List):
     st.success(f"✅ {len(files)} arquivo(s) encontrado(s) para extração:")
 
     # -- Loop pelos arquivos --
@@ -84,7 +84,7 @@ def render_extraction_interface(category_key: str, category_info: Dict, files: L
     if st.button(f"🤖 Iniciar Extração de IA para **{category_info['name']}**", key=f"extract_{category_key}", type="primary", use_container_width=True):
         with st.spinner(f"Analisando documentos e extraindo dados de '{category_info['name']}'..."):
 
-            success = project_manager.run_extraction(current_project, category_key) #<-- Chama extracao
+            success = project_manager.run_text_consolidation_for_category(project_name, category_key)
 
             if success:
                 st.success(f"✅ Extração de '{category_info['name']}' concluída!")

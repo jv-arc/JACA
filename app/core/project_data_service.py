@@ -154,12 +154,12 @@ class ProjectDataService:
     #----------------------------------------------------------------
     # Salva texto consolidado editado
     #----------------------------------------------------------------
-    def load_consolidated_text(self, project_name: str, category: str) -> Optional[str]:
-        try:
-            data = self.load_structured_extraction(project_name, category)
-        
-        
-        return data.get('consolidated_text', '') if data else None
+    #def load_consolidated_text(self, project_name: str, category: str) -> Optional[str]:
+    #    try:
+    #        data = self.load_structured_extraction(project_name, category)
+    #    
+    #    
+        #return data.get('consolidated_text', '') if data else None
         
 
 

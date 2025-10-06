@@ -86,12 +86,12 @@ class ProjectManager:
     
     def has_extracted_text(self, project_name: str) -> bool:
         return self.data.has_extracted_text(project_name)
-
-    def run_extraction(self, project_name: str, category: str) -> Optional[Dict]:
-        return self.workflow.run_extraction_for_category(project_name, category)
-
+    
+    def run_extraction(self, project_name:str, category:str) -> Optional[str]:
+        return self.workflow.run_text_consolidation_for_category(project_name, category)
+    
     def run_secondary_extraction(self, project_name:str, category:str)-> bool:
-        return self.workflow.run_secondary_extraction(project_name, category)
+        return self.workflow.run_secondary_extraction_for_category(project_name, category)
 
     def load_structured_extraction(self, project_name: str, category: str) -> Optional[Dict]:
         return self.data.load_structured_extraction(project_name, category)

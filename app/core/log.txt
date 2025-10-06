@@ -1355,3 +1355,53 @@ delete_url: "/_stcore/upload_file/0877d6d2-a576-4822-bb1e-ff71be758bd8/f1d81628-
 2025-10-06 08:04:21,406 - ProjectWorkflowOrchestrator - INFO - logger.py:49 - Extração para 'estatuto' concluída.
 2025-10-06 11:29:21,446 - UI-Extracao - ERROR - logger.py:55 - Usuário chegou na página de Extração sem ter um projeto selecionado, será que a sessão expirou?
 2025-10-06 11:29:21,447 - UI-Extracao - ERROR - logger.py:55 - Usuário chegou na página de Extração mas não tem um project_manager na sessão!!! será que a sessão expirou?
+2025-10-06 17:33:07,746 - GeminiClient - INFO - logger.py:49 - Cliente Gemini configurado com sucesso.
+2025-10-06 17:33:07,747 - ProjectCRUDService - INFO - logger.py:49 - Servico inicializado com sucesso.
+2025-10-06 17:33:07,747 - ProjectCRUDService - INFO - logger.py:49 - Servico inicializado com sucesso.
+2025-10-06 17:33:07,747 - ProjectFileManager - INFO - logger.py:49 - Serviço iniciado com suscesso.
+2025-10-06 17:33:07,786 - PdfGenerator - INFO - logger.py:49 - Classe inicializada com sucesso
+2025-10-06 17:33:07,786 - ReportConfigManager - INFO - logger.py:49 - Carregando configuração de relatório de '/home/jvctr/0/NOW/JACA/app/data/app_config.json'...
+2025-10-06 17:33:07,787 - ReportConfigManager - INFO - logger.py:49 - Configuração de relatório carregada com sucesso.
+2025-10-06 17:33:07,787 - ReportConfigManager - INFO - logger.py:49 - Classe inicializada corretamente
+2025-10-06 17:33:07,787 - ExportManager - INFO - logger.py:49 - ExportManager inicializado.
+2025-10-06 17:33:07,787 - ProjectCRUDService - INFO - logger.py:49 - Servico inicializado com sucesso.
+2025-10-06 17:33:07,787 - ReportConfigManager - INFO - logger.py:49 - Carregando configuração de relatório de '/home/jvctr/0/NOW/JACA/app/data/app_config.json'...
+2025-10-06 17:33:07,787 - ReportConfigManager - INFO - logger.py:49 - Configuração de relatório carregada com sucesso.
+2025-10-06 17:33:07,787 - ReportConfigManager - INFO - logger.py:49 - Classe inicializada corretamente
+2025-10-06 17:33:07,787 - ProjectConfigurationService - INFO - logger.py:49 - Serviço inicializado com sucesso
+2025-10-06 17:33:07,787 - ProjectCRUDService - INFO - logger.py:49 - Servico inicializado com sucesso.
+2025-10-06 17:33:07,830 - PdfGenerator - INFO - logger.py:49 - Classe inicializada com sucesso
+2025-10-06 17:33:07,830 - ReportConfigManager - INFO - logger.py:49 - Carregando configuração de relatório de '/home/jvctr/0/NOW/JACA/app/data/app_config.json'...
+2025-10-06 17:33:07,831 - ReportConfigManager - INFO - logger.py:49 - Configuração de relatório carregada com sucesso.
+2025-10-06 17:33:07,831 - ReportConfigManager - INFO - logger.py:49 - Classe inicializada corretamente
+2025-10-06 17:33:07,831 - ExportManager - INFO - logger.py:49 - ExportManager inicializado.
+2025-10-06 17:33:07,831 - DocumentPackageService - INFO - logger.py:49 - Serviço inicializado com sucesso
+2025-10-06 17:33:07,831 - ProjectCRUDService - INFO - logger.py:49 - Servico inicializado com sucesso.
+2025-10-06 17:33:07,831 - ExtractedDataManager - INFO - logger.py:49 - Classe inicializada com sucesso.
+2025-10-06 17:33:07,831 - ProjectDataService - INFO - logger.py:49 - Serviço inicializado com sucesso
+2025-10-06 17:33:07,831 - ExtractedDataManager - INFO - logger.py:49 - Classe inicializada com sucesso.
+2025-10-06 17:33:07,831 - CriteriaManager - INFO - logger.py:49 - Carregando critérios de /home/jvctr/0/NOW/JACA/app/data/criteria_database.json...
+2025-10-06 17:33:07,831 - CriteriaManager - INFO - logger.py:49 - 3 critérios carregados com sucesso.
+2025-10-06 17:33:07,831 - CriteriaManager - INFO - logger.py:49 - Serviço inicializado com sucesso
+2025-10-06 17:33:07,831 - ProjectCRUDService - INFO - logger.py:49 - Servico inicializado com sucesso.
+2025-10-06 17:33:07,831 - ExtractedDataManager - INFO - logger.py:49 - Classe inicializada com sucesso.
+2025-10-06 17:33:07,831 - ProjectDataService - INFO - logger.py:49 - Serviço inicializado com sucesso
+2025-10-06 17:33:07,832 - ProjectCRUDService - INFO - logger.py:49 - Servico inicializado com sucesso.
+2025-10-06 17:33:07,866 - PdfGenerator - INFO - logger.py:49 - Classe inicializada com sucesso
+2025-10-06 17:33:07,866 - ReportConfigManager - INFO - logger.py:49 - Carregando configuração de relatório de '/home/jvctr/0/NOW/JACA/app/data/app_config.json'...
+2025-10-06 17:33:07,867 - ReportConfigManager - INFO - logger.py:49 - Configuração de relatório carregada com sucesso.
+2025-10-06 17:33:07,867 - ReportConfigManager - INFO - logger.py:49 - Classe inicializada corretamente
+2025-10-06 17:33:07,867 - ExportManager - INFO - logger.py:49 - ExportManager inicializado.
+2025-10-06 17:33:07,867 - ReportConfigManager - INFO - logger.py:49 - Carregando configuração de relatório de '/home/jvctr/0/NOW/JACA/app/data/app_config.json'...
+2025-10-06 17:33:07,867 - ReportConfigManager - INFO - logger.py:49 - Configuração de relatório carregada com sucesso.
+2025-10-06 17:33:07,867 - ReportConfigManager - INFO - logger.py:49 - Classe inicializada corretamente
+2025-10-06 17:33:07,867 - ProjectWorkflowOrchestrator - INFO - logger.py:49 - Serviço de workflow inicializado com sucesso
+2025-10-06 17:33:07,867 - ProjectManager - INFO - logger.py:49 - ProjectManager inicializado corretamente
+2025-10-06 17:33:07,867 - Init-Home - INFO - logger.py:49 - ✅ Aplicação iniciada e serviços carregados.
+2025-10-06 17:33:15,290 - UI-Projeto - INFO - logger.py:49 - Carregando projeto `F_rum`
+2025-10-06 17:33:15,363 - UI-Projeto - INFO - logger.py:49 - Dados do projeto 'F_rum' foram carregados com sucesso
+2025-10-06 17:33:15,367 - UI-Projeto - INFO - logger.py:49 - Categoria 'ata' para projeto 'Fórum' não possui nenhum arquivo
+2025-10-06 17:33:15,369 - UI-Projeto - INFO - logger.py:49 - Categoria 'identificacao' para projeto 'Fórum' não possui nenhum arquivo
+2025-10-06 17:33:15,370 - UI-Projeto - INFO - logger.py:49 - Categoria 'licenca' para projeto 'Fórum' não possui nenhum arquivo
+2025-10-06 17:33:15,372 - UI-Projeto - INFO - logger.py:49 - Categoria 'programacao' para projeto 'Fórum' não possui nenhum arquivo
+2025-10-06 17:33:21,652 - UI-Extracao - INFO - logger.py:49 - Página de extração carregada com sucesso para o projeto 'F_rum'
