@@ -1610,3 +1610,313 @@ delete_url: "/_stcore/upload_file/0877d6d2-a576-4822-bb1e-ff71be758bd8/f1d81628-
 2025-10-06 17:46:27,426 - ProjectWorkflowOrchestrator - INFO - logger.py:49 - Iniciando extração primária para 'estatuto' em 'F_rum'.
 2025-10-06 17:46:27,428 - ExtractedDataManager - INFO - logger.py:49 - Processando arquivo estatuto_Comprovante_03-10-2025_115926.pdf...
 2025-10-06 17:46:27,448 - ExtractedDataManager - INFO - logger.py:49 - PDF 'estatuto_Comprovante_03-10-2025_115926.pdf processado como documento de texto
+2025-10-06 17:51:25,532 - GeminiClient - INFO - logger.py:49 - Cliente Gemini configurado com sucesso.
+2025-10-06 17:51:25,532 - ProjectCRUDService - INFO - logger.py:49 - Servico inicializado com sucesso.
+2025-10-06 17:51:25,532 - ProjectCRUDService - INFO - logger.py:49 - Servico inicializado com sucesso.
+2025-10-06 17:51:25,532 - ProjectFileManager - INFO - logger.py:49 - Serviço iniciado com suscesso.
+2025-10-06 17:51:25,570 - PdfGenerator - INFO - logger.py:49 - Classe inicializada com sucesso
+2025-10-06 17:51:25,570 - ReportConfigManager - INFO - logger.py:49 - Carregando configuração de relatório de '/home/jvctr/0/NOW/JACA/app/data/app_config.json'...
+2025-10-06 17:51:25,570 - ReportConfigManager - INFO - logger.py:49 - Configuração de relatório carregada com sucesso.
+2025-10-06 17:51:25,570 - ReportConfigManager - INFO - logger.py:49 - Classe inicializada corretamente
+2025-10-06 17:51:25,570 - ExportManager - INFO - logger.py:49 - ExportManager inicializado.
+2025-10-06 17:51:25,570 - ProjectCRUDService - INFO - logger.py:49 - Servico inicializado com sucesso.
+2025-10-06 17:51:25,571 - ReportConfigManager - INFO - logger.py:49 - Carregando configuração de relatório de '/home/jvctr/0/NOW/JACA/app/data/app_config.json'...
+2025-10-06 17:51:25,571 - ReportConfigManager - INFO - logger.py:49 - Configuração de relatório carregada com sucesso.
+2025-10-06 17:51:25,571 - ReportConfigManager - INFO - logger.py:49 - Classe inicializada corretamente
+2025-10-06 17:51:25,571 - ProjectConfigurationService - INFO - logger.py:49 - Serviço inicializado com sucesso
+2025-10-06 17:51:25,571 - ProjectCRUDService - INFO - logger.py:49 - Servico inicializado com sucesso.
+2025-10-06 17:51:25,605 - PdfGenerator - INFO - logger.py:49 - Classe inicializada com sucesso
+2025-10-06 17:51:25,605 - ReportConfigManager - INFO - logger.py:49 - Carregando configuração de relatório de '/home/jvctr/0/NOW/JACA/app/data/app_config.json'...
+2025-10-06 17:51:25,605 - ReportConfigManager - INFO - logger.py:49 - Configuração de relatório carregada com sucesso.
+2025-10-06 17:51:25,605 - ReportConfigManager - INFO - logger.py:49 - Classe inicializada corretamente
+2025-10-06 17:51:25,605 - ExportManager - INFO - logger.py:49 - ExportManager inicializado.
+2025-10-06 17:51:25,605 - DocumentPackageService - INFO - logger.py:49 - Serviço inicializado com sucesso
+2025-10-06 17:51:25,606 - ProjectCRUDService - INFO - logger.py:49 - Servico inicializado com sucesso.
+2025-10-06 17:51:25,606 - ExtractedDataManager - INFO - logger.py:49 - Classe inicializada com sucesso.
+2025-10-06 17:51:25,606 - ProjectDataService - INFO - logger.py:49 - Serviço inicializado com sucesso
+2025-10-06 17:51:25,606 - ExtractedDataManager - INFO - logger.py:49 - Classe inicializada com sucesso.
+2025-10-06 17:51:25,606 - CriteriaManager - INFO - logger.py:49 - Carregando critérios de /home/jvctr/0/NOW/JACA/app/data/criteria_database.json...
+2025-10-06 17:51:25,606 - CriteriaManager - INFO - logger.py:49 - 3 critérios carregados com sucesso.
+2025-10-06 17:51:25,606 - CriteriaManager - INFO - logger.py:49 - Serviço inicializado com sucesso
+2025-10-06 17:51:25,606 - ProjectCRUDService - INFO - logger.py:49 - Servico inicializado com sucesso.
+2025-10-06 17:51:25,606 - ExtractedDataManager - INFO - logger.py:49 - Classe inicializada com sucesso.
+2025-10-06 17:51:25,606 - ProjectDataService - INFO - logger.py:49 - Serviço inicializado com sucesso
+2025-10-06 17:51:25,606 - ProjectCRUDService - INFO - logger.py:49 - Servico inicializado com sucesso.
+2025-10-06 17:51:25,642 - PdfGenerator - INFO - logger.py:49 - Classe inicializada com sucesso
+2025-10-06 17:51:25,643 - ReportConfigManager - INFO - logger.py:49 - Carregando configuração de relatório de '/home/jvctr/0/NOW/JACA/app/data/app_config.json'...
+2025-10-06 17:51:25,643 - ReportConfigManager - INFO - logger.py:49 - Configuração de relatório carregada com sucesso.
+2025-10-06 17:51:25,643 - ReportConfigManager - INFO - logger.py:49 - Classe inicializada corretamente
+2025-10-06 17:51:25,643 - ExportManager - INFO - logger.py:49 - ExportManager inicializado.
+2025-10-06 17:51:25,643 - ReportConfigManager - INFO - logger.py:49 - Carregando configuração de relatório de '/home/jvctr/0/NOW/JACA/app/data/app_config.json'...
+2025-10-06 17:51:25,643 - ReportConfigManager - INFO - logger.py:49 - Configuração de relatório carregada com sucesso.
+2025-10-06 17:51:25,643 - ReportConfigManager - INFO - logger.py:49 - Classe inicializada corretamente
+2025-10-06 17:51:25,643 - ProjectWorkflowOrchestrator - INFO - logger.py:49 - Serviço de workflow inicializado com sucesso
+2025-10-06 17:51:25,643 - ProjectManager - INFO - logger.py:49 - ProjectManager inicializado corretamente
+2025-10-06 17:51:25,643 - Init-Home - INFO - logger.py:49 - ✅ Aplicação iniciada e serviços carregados.
+2025-10-06 17:51:28,124 - UI-Projeto - INFO - logger.py:49 - Carregando projeto `F_rum`
+2025-10-06 17:51:28,190 - UI-Projeto - INFO - logger.py:49 - Dados do projeto 'F_rum' foram carregados com sucesso
+2025-10-06 17:51:28,194 - UI-Projeto - INFO - logger.py:49 - Categoria 'ata' para projeto 'Fórum' não possui nenhum arquivo
+2025-10-06 17:51:28,195 - UI-Projeto - INFO - logger.py:49 - Categoria 'identificacao' para projeto 'Fórum' não possui nenhum arquivo
+2025-10-06 17:51:28,197 - UI-Projeto - INFO - logger.py:49 - Categoria 'licenca' para projeto 'Fórum' não possui nenhum arquivo
+2025-10-06 17:51:28,198 - UI-Projeto - INFO - logger.py:49 - Categoria 'programacao' para projeto 'Fórum' não possui nenhum arquivo
+2025-10-06 17:51:31,190 - UI-Extracao - INFO - logger.py:49 - Página de extração carregada com sucesso para o projeto 'F_rum'
+2025-10-06 17:51:33,204 - UI-Extracao - INFO - logger.py:49 - Página de extração carregada com sucesso para o projeto 'F_rum'
+2025-10-06 17:51:33,213 - ProjectWorkflowOrchestrator - INFO - logger.py:49 - Iniciando extração primária para 'estatuto' em 'F_rum'.
+2025-10-06 17:51:33,214 - ExtractedDataManager - INFO - logger.py:49 - Processando arquivo estatuto_Comprovante_03-10-2025_115926.pdf...
+2025-10-06 17:51:33,234 - ExtractedDataManager - INFO - logger.py:49 - PDF 'estatuto_Comprovante_03-10-2025_115926.pdf processado como documento de texto
+2025-10-06 17:51:33,234 - GeminiClient - INFO - logger.py:49 - Gerando texto com o modelo: 
+Comprovante BB
+
+Pix Enviado
+R$ 260,00
+03/10/2025 às 11:59:09
+Recebedor
+Joao V A R Carvalho
+CPF
+***.817.698-**
+ 
+ 
+Agência
+8725
+ 
+ 
+Conta
+388675
+ 
+ 
+Instituição
+60701190 ITAÚ UNIBANCO S.A.
+ 
+ 
+Tipo de conta
+Conta Corrente
+ 
+ 
+Chave Pix
+46381769840
+ 
+ 
+Pagador
+Marlene Pereira de Araujo
+CPF
+***.638.028.**
+ 
+ 
+Agência
+4851-8
+ 
+ 
+Conta
+200402-X
+ 
+ 
+Instituição
+00000000 BCO DO BRASIL S.A.
+ 
+ 
+Informações adicionais
+ID: E0000000020251003145755663213651
+Documento: 000000000100302
+Autenticação SISBB: D.797.3AB.DAC.39B.3DC
+Notiﬁcação enviada em: 03/10/2025 às 11:59:10
+Central de Relacionamento:4004 0001 Capitais e regiões metropolitanas.0800 729 0001 Demais localidades.SAC: 0800 729 0722.Ouvidoria: 0800 729 5678.Atendimento a deﬁcientes audit
+Esse é o novo comprovante do Banco do Brasil.Mais clareza nas informações, facilitando sua vida.
+...
+2025-10-06 17:51:34,017 - GeminiClient - ERROR - logger.py:55 - Erro durante a chamada para a API Gemini: 
+
+ 400 * GenerateContentRequest.model: unexpected model name format
+Traceback (most recent call last):
+  File "/home/jvctr/0/NOW/JACA/app/core/ai_client.py", line 56, in generate_text_from_prompt
+    response = model.generate_content(prompt)
+  File "/home/jvctr/0/NOW/JACA/.venv/lib/python3.13/site-packages/google/generativeai/generative_models.py", line 331, in generate_content
+    response = self._client.generate_content(
+        request,
+        **request_options,
+    )
+  File "/home/jvctr/0/NOW/JACA/.venv/lib/python3.13/site-packages/google/ai/generativelanguage_v1beta/services/generative_service/client.py", line 835, in generate_content
+    response = rpc(
+        request,
+    ...<2 lines>...
+        metadata=metadata,
+    )
+  File "/home/jvctr/0/NOW/JACA/.venv/lib/python3.13/site-packages/google/api_core/gapic_v1/method.py", line 131, in __call__
+    return wrapped_func(*args, **kwargs)
+  File "/home/jvctr/0/NOW/JACA/.venv/lib/python3.13/site-packages/google/api_core/retry/retry_unary.py", line 294, in retry_wrapped_func
+    return retry_target(
+        target,
+    ...<3 lines>...
+        on_error=on_error,
+    )
+  File "/home/jvctr/0/NOW/JACA/.venv/lib/python3.13/site-packages/google/api_core/retry/retry_unary.py", line 156, in retry_target
+    next_sleep = _retry_error_helper(
+        exc,
+    ...<6 lines>...
+        timeout,
+    )
+  File "/home/jvctr/0/NOW/JACA/.venv/lib/python3.13/site-packages/google/api_core/retry/retry_base.py", line 214, in _retry_error_helper
+    raise final_exc from source_exc
+  File "/home/jvctr/0/NOW/JACA/.venv/lib/python3.13/site-packages/google/api_core/retry/retry_unary.py", line 147, in retry_target
+    result = target()
+  File "/home/jvctr/0/NOW/JACA/.venv/lib/python3.13/site-packages/google/api_core/timeout.py", line 130, in func_with_timeout
+    return func(*args, **kwargs)
+  File "/home/jvctr/0/NOW/JACA/.venv/lib/python3.13/site-packages/google/api_core/grpc_helpers.py", line 78, in error_remapped_callable
+    raise exceptions.from_grpc_error(exc) from exc
+google.api_core.exceptions.InvalidArgument: 400 * GenerateContentRequest.model: unexpected model name format
+
+2025-10-06 17:51:34,031 - ProjectWorkflowOrchestrator - ERROR - logger.py:55 - Obtenção de textos falhou
+2025-10-06 17:51:34,032 - UI-Extracao - INFO - logger.py:49 - Erro na extração de 'Estatuto'
+2025-10-06 17:53:54,732 - GeminiClient - INFO - logger.py:49 - Cliente Gemini configurado com sucesso.
+2025-10-06 17:53:54,732 - ProjectCRUDService - INFO - logger.py:49 - Servico inicializado com sucesso.
+2025-10-06 17:53:54,732 - ProjectCRUDService - INFO - logger.py:49 - Servico inicializado com sucesso.
+2025-10-06 17:53:54,732 - ProjectFileManager - INFO - logger.py:49 - Serviço iniciado com suscesso.
+2025-10-06 17:53:54,771 - PdfGenerator - INFO - logger.py:49 - Classe inicializada com sucesso
+2025-10-06 17:53:54,771 - ReportConfigManager - INFO - logger.py:49 - Carregando configuração de relatório de '/home/jvctr/0/NOW/JACA/app/data/app_config.json'...
+2025-10-06 17:53:54,772 - ReportConfigManager - INFO - logger.py:49 - Configuração de relatório carregada com sucesso.
+2025-10-06 17:53:54,772 - ReportConfigManager - INFO - logger.py:49 - Classe inicializada corretamente
+2025-10-06 17:53:54,772 - ExportManager - INFO - logger.py:49 - ExportManager inicializado.
+2025-10-06 17:53:54,772 - ProjectCRUDService - INFO - logger.py:49 - Servico inicializado com sucesso.
+2025-10-06 17:53:54,772 - ReportConfigManager - INFO - logger.py:49 - Carregando configuração de relatório de '/home/jvctr/0/NOW/JACA/app/data/app_config.json'...
+2025-10-06 17:53:54,772 - ReportConfigManager - INFO - logger.py:49 - Configuração de relatório carregada com sucesso.
+2025-10-06 17:53:54,772 - ReportConfigManager - INFO - logger.py:49 - Classe inicializada corretamente
+2025-10-06 17:53:54,772 - ProjectConfigurationService - INFO - logger.py:49 - Serviço inicializado com sucesso
+2025-10-06 17:53:54,772 - ProjectCRUDService - INFO - logger.py:49 - Servico inicializado com sucesso.
+2025-10-06 17:53:54,807 - PdfGenerator - INFO - logger.py:49 - Classe inicializada com sucesso
+2025-10-06 17:53:54,808 - ReportConfigManager - INFO - logger.py:49 - Carregando configuração de relatório de '/home/jvctr/0/NOW/JACA/app/data/app_config.json'...
+2025-10-06 17:53:54,808 - ReportConfigManager - INFO - logger.py:49 - Configuração de relatório carregada com sucesso.
+2025-10-06 17:53:54,808 - ReportConfigManager - INFO - logger.py:49 - Classe inicializada corretamente
+2025-10-06 17:53:54,808 - ExportManager - INFO - logger.py:49 - ExportManager inicializado.
+2025-10-06 17:53:54,808 - DocumentPackageService - INFO - logger.py:49 - Serviço inicializado com sucesso
+2025-10-06 17:53:54,808 - ProjectCRUDService - INFO - logger.py:49 - Servico inicializado com sucesso.
+2025-10-06 17:53:54,808 - ExtractedDataManager - INFO - logger.py:49 - Classe inicializada com sucesso.
+2025-10-06 17:53:54,808 - ProjectDataService - INFO - logger.py:49 - Serviço inicializado com sucesso
+2025-10-06 17:53:54,808 - ExtractedDataManager - INFO - logger.py:49 - Classe inicializada com sucesso.
+2025-10-06 17:53:54,808 - CriteriaManager - INFO - logger.py:49 - Carregando critérios de /home/jvctr/0/NOW/JACA/app/data/criteria_database.json...
+2025-10-06 17:53:54,808 - CriteriaManager - INFO - logger.py:49 - 3 critérios carregados com sucesso.
+2025-10-06 17:53:54,808 - CriteriaManager - INFO - logger.py:49 - Serviço inicializado com sucesso
+2025-10-06 17:53:54,809 - ProjectCRUDService - INFO - logger.py:49 - Servico inicializado com sucesso.
+2025-10-06 17:53:54,809 - ExtractedDataManager - INFO - logger.py:49 - Classe inicializada com sucesso.
+2025-10-06 17:53:54,809 - ProjectDataService - INFO - logger.py:49 - Serviço inicializado com sucesso
+2025-10-06 17:53:54,809 - ProjectCRUDService - INFO - logger.py:49 - Servico inicializado com sucesso.
+2025-10-06 17:53:54,844 - PdfGenerator - INFO - logger.py:49 - Classe inicializada com sucesso
+2025-10-06 17:53:54,845 - ReportConfigManager - INFO - logger.py:49 - Carregando configuração de relatório de '/home/jvctr/0/NOW/JACA/app/data/app_config.json'...
+2025-10-06 17:53:54,845 - ReportConfigManager - INFO - logger.py:49 - Configuração de relatório carregada com sucesso.
+2025-10-06 17:53:54,845 - ReportConfigManager - INFO - logger.py:49 - Classe inicializada corretamente
+2025-10-06 17:53:54,845 - ExportManager - INFO - logger.py:49 - ExportManager inicializado.
+2025-10-06 17:53:54,845 - ReportConfigManager - INFO - logger.py:49 - Carregando configuração de relatório de '/home/jvctr/0/NOW/JACA/app/data/app_config.json'...
+2025-10-06 17:53:54,845 - ReportConfigManager - INFO - logger.py:49 - Configuração de relatório carregada com sucesso.
+2025-10-06 17:53:54,845 - ReportConfigManager - INFO - logger.py:49 - Classe inicializada corretamente
+2025-10-06 17:53:54,845 - ProjectWorkflowOrchestrator - INFO - logger.py:49 - Serviço de workflow inicializado com sucesso
+2025-10-06 17:53:54,845 - ProjectManager - INFO - logger.py:49 - ProjectManager inicializado corretamente
+2025-10-06 17:53:54,845 - Init-Home - INFO - logger.py:49 - ✅ Aplicação iniciada e serviços carregados.
+2025-10-06 17:53:56,253 - UI-Projeto - INFO - logger.py:49 - Carregando projeto `F_rum`
+2025-10-06 17:53:56,312 - UI-Projeto - INFO - logger.py:49 - Dados do projeto 'F_rum' foram carregados com sucesso
+2025-10-06 17:53:56,315 - UI-Projeto - INFO - logger.py:49 - Categoria 'ata' para projeto 'Fórum' não possui nenhum arquivo
+2025-10-06 17:53:56,317 - UI-Projeto - INFO - logger.py:49 - Categoria 'identificacao' para projeto 'Fórum' não possui nenhum arquivo
+2025-10-06 17:53:56,319 - UI-Projeto - INFO - logger.py:49 - Categoria 'licenca' para projeto 'Fórum' não possui nenhum arquivo
+2025-10-06 17:53:56,320 - UI-Projeto - INFO - logger.py:49 - Categoria 'programacao' para projeto 'Fórum' não possui nenhum arquivo
+2025-10-06 17:53:57,894 - UI-Extracao - INFO - logger.py:49 - Página de extração carregada com sucesso para o projeto 'F_rum'
+2025-10-06 17:54:00,978 - UI-Extracao - INFO - logger.py:49 - Página de extração carregada com sucesso para o projeto 'F_rum'
+2025-10-06 17:54:00,987 - ProjectWorkflowOrchestrator - INFO - logger.py:49 - Iniciando extração primária para 'estatuto' em 'F_rum'.
+2025-10-06 17:54:00,989 - ExtractedDataManager - INFO - logger.py:49 - Processando arquivo estatuto_Comprovante_03-10-2025_115926.pdf...
+2025-10-06 17:54:01,008 - ExtractedDataManager - INFO - logger.py:49 - PDF 'estatuto_Comprovante_03-10-2025_115926.pdf processado como documento de texto
+2025-10-06 17:54:01,008 - GeminiClient - INFO - logger.py:49 - Gerando texto com o modelo: 
+Comprovante BB
+
+Pix Enviado
+R$ 260,00
+03/10/2025 às 11:59:09
+Recebedor
+Joao V A R Carvalho
+CPF
+***.817.698-**
+ 
+ 
+Agência
+8725
+ 
+ 
+Conta
+388675
+ 
+ 
+Instituição
+60701190 ITAÚ UNIBANCO S.A.
+ 
+ 
+Tipo de conta
+Conta Corrente
+ 
+ 
+Chave Pix
+46381769840
+ 
+ 
+Pagador
+Marlene Pereira de Araujo
+CPF
+***.638.028.**
+ 
+ 
+Agência
+4851-8
+ 
+ 
+Conta
+200402-X
+ 
+ 
+Instituição
+00000000 BCO DO BRASIL S.A.
+ 
+ 
+Informações adicionais
+ID: E0000000020251003145755663213651
+Documento: 000000000100302
+Autenticação SISBB: D.797.3AB.DAC.39B.3DC
+Notiﬁcação enviada em: 03/10/2025 às 11:59:10
+Central de Relacionamento:4004 0001 Capitais e regiões metropolitanas.0800 729 0001 Demais localidades.SAC: 0800 729 0722.Ouvidoria: 0800 729 5678.Atendimento a deﬁcientes audit
+Esse é o novo comprovante do Banco do Brasil.Mais clareza nas informações, facilitando sua vida.
+...
+2025-10-06 17:54:01,763 - GeminiClient - ERROR - logger.py:55 - Erro durante a chamada para a API Gemini: 
+
+ 400 * GenerateContentRequest.model: unexpected model name format
+Traceback (most recent call last):
+  File "/home/jvctr/0/NOW/JACA/app/core/ai_client.py", line 56, in generate_text_from_prompt
+    response = model.generate_content(prompt)
+  File "/home/jvctr/0/NOW/JACA/.venv/lib/python3.13/site-packages/google/generativeai/generative_models.py", line 331, in generate_content
+    response = self._client.generate_content(
+        request,
+        **request_options,
+    )
+  File "/home/jvctr/0/NOW/JACA/.venv/lib/python3.13/site-packages/google/ai/generativelanguage_v1beta/services/generative_service/client.py", line 835, in generate_content
+    response = rpc(
+        request,
+    ...<2 lines>...
+        metadata=metadata,
+    )
+  File "/home/jvctr/0/NOW/JACA/.venv/lib/python3.13/site-packages/google/api_core/gapic_v1/method.py", line 131, in __call__
+    return wrapped_func(*args, **kwargs)
+  File "/home/jvctr/0/NOW/JACA/.venv/lib/python3.13/site-packages/google/api_core/retry/retry_unary.py", line 294, in retry_wrapped_func
+    return retry_target(
+        target,
+    ...<3 lines>...
+        on_error=on_error,
+    )
+  File "/home/jvctr/0/NOW/JACA/.venv/lib/python3.13/site-packages/google/api_core/retry/retry_unary.py", line 156, in retry_target
+    next_sleep = _retry_error_helper(
+        exc,
+    ...<6 lines>...
+        timeout,
+    )
+  File "/home/jvctr/0/NOW/JACA/.venv/lib/python3.13/site-packages/google/api_core/retry/retry_base.py", line 214, in _retry_error_helper
+    raise final_exc from source_exc
+  File "/home/jvctr/0/NOW/JACA/.venv/lib/python3.13/site-packages/google/api_core/retry/retry_unary.py", line 147, in retry_target
+    result = target()
+  File "/home/jvctr/0/NOW/JACA/.venv/lib/python3.13/site-packages/google/api_core/timeout.py", line 130, in func_with_timeout
+    return func(*args, **kwargs)
+  File "/home/jvctr/0/NOW/JACA/.venv/lib/python3.13/site-packages/google/api_core/grpc_helpers.py", line 78, in error_remapped_callable
+    raise exceptions.from_grpc_error(exc) from exc
+google.api_core.exceptions.InvalidArgument: 400 * GenerateContentRequest.model: unexpected model name format
+
+2025-10-06 17:54:01,767 - ProjectWorkflowOrchestrator - ERROR - logger.py:55 - Obtenção de textos falhou
+2025-10-06 17:54:01,768 - UI-Extracao - INFO - logger.py:49 - Erro na extração de 'Estatuto'
