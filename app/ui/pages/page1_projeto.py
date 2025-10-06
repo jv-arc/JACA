@@ -33,7 +33,7 @@ st.set_page_config(
 #-----------------------------------------------------------------
 # Abre um arquivo com o aplicativo padrão do sistema operacional.
 #-----------------------------------------------------------------
-def open_file_with_default_app(file_path: str):
+def open_file_with_default_app(file_path: str)->None:
     logger.info("Identificando Sistema Operacional")
 
     try:

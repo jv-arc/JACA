@@ -20,10 +20,15 @@ Lista completa de todos os métodos de app.core que a UI utiliza para realizar s
 `add_file(project_name, uploaded_file, category_key)->bool`:Usado para adicionar um arquivo a uma determinada categoria no projeto atual
 
 
-
 ## Página de Extração (page2)
 
-- `list_files_in_category`
+**Lista Arquivos em uma determinada categoria em um projeto**
+`list_files_in_category(current_project, category_key)->List(str)` usado em dois lugares:
+- obter lista de arquivos para extração e depois extrair com `run_extraction`
+
+- 
+
+
 - `run_extraction`
 - `save_edited_text`
 - `run_secondary_extraction`

@@ -119,7 +119,12 @@ class ProjectManager:
 
     def update_director_list(self, project_name: str, directors: List[Dict]) -> bool:
         return self.data.update_director_list(project_name, directors)
-
+    
+    def run_secondary_extraction(self, project_name:str, category:str)-> bool:
+        self.logger.warning("Método run_secondary_extraction ainda não implementado")
+        return False
+    
+    
     # -----------------------
     # Criteria & Verification
     # -----------------------

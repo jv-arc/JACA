@@ -103,11 +103,12 @@ class ProjectDataService:
     def save_structured_extraction(self, project_name: str, category: str, data: Dict) -> bool:
         content_fields = data.get('content_fields', {})
         ignored_fields = data.get('ignored_fields', {})
+        main_content = data.get('main_content', {})
 
         final_data_obj = {
             'content_fields': content_fields,
             'ignored_fields': ignored_fields,
-            'consolidated_text': self.extraction_manager.consolidate_content_fields(content),
+            'consolidated_text': self.extraction_manager.consolidate_content_fields(main_content),
             'workflow_used': category,
             'extracted_at': datetime.now().isoformat(),
             'last_modified': datetime.now().isoformat(),
@@ -115,7 +116,7 @@ class ProjectDataService:
         }
 
     
-        return self.extraction_manager.save_dict_to_file
+        return self.extraction_manager.save_dict_to_file(project_name, category, final_data_obj)
 
 
 
