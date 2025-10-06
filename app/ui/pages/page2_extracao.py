@@ -84,7 +84,7 @@ def render_extraction_interface(project_name:str, category_key: str, category_in
     if st.button(f"🤖 Iniciar Extração de IA para **{category_info['name']}**", key=f"extract_{category_key}", type="primary", use_container_width=True):
         with st.spinner(f"Analisando documentos e extraindo dados de '{category_info['name']}'..."):
 
-            success = project_manager.run_text_consolidation_for_category(project_name, category_key)
+            success = project_manager.run_extraction(project_name, category_key)
 
             if success:
                 st.success(f"✅ Extração de '{category_info['name']}' concluída!")
@@ -210,7 +210,7 @@ def render_editing_interface(category_key: str, category_info: Dict, files: List
 #---------------------------------------------------------------
 # Renderiza uma seção completa para uma categoria de documento.
 #---------------------------------------------------------------
-def render_category_section(category_key: str, category_info: Dict):
+def render_category_section(project_name, category_key: str, category_info: Dict):
     with st.container(border=True):
         
         # -- Cabecalho Simples --
@@ -233,7 +233,7 @@ def render_category_section(category_key: str, category_info: Dict):
 
         # -- Caso nao tenham dados --
         else:
-            render_extraction_interface(category_key, category_info, project_files)
+            render_extraction_interface(project_name, category_key, category_info, project_files)
             return 
 
 
@@ -265,4 +265,4 @@ else:
 
 
     for key, info in CATEGORIES.items():
-        render_category_section(key, info)
+        render_category_section(current_project, key, info)
