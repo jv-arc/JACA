@@ -1353,3 +1353,5 @@ delete_url: "/_stcore/upload_file/0877d6d2-a576-4822-bb1e-ff71be758bd8/f1d81628-
 2025-10-06 08:03:51,360 - GeminiClient - INFO - logger.py:49 - Gerando JSON com o modelo: gemini-2.5-flash...
 2025-10-06 08:04:21,406 - ExtractedDataManager - INFO - logger.py:49 - Extração da IA concluída. Retornando dados estruturados.
 2025-10-06 08:04:21,406 - ProjectWorkflowOrchestrator - INFO - logger.py:49 - Extração para 'estatuto' concluída.
+2025-10-06 11:29:21,446 - UI-Extracao - ERROR - logger.py:55 - Usuário chegou na página de Extração sem ter um projeto selecionado, será que a sessão expirou?
+2025-10-06 11:29:21,447 - UI-Extracao - ERROR - logger.py:55 - Usuário chegou na página de Extração mas não tem um project_manager na sessão!!! será que a sessão expirou?

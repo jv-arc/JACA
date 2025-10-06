@@ -40,9 +40,9 @@ CATEGORIES = {
 #---------------------------------------------------------------
 # Função+ para chamar o backend para extrair o consolidated_text.
 #---------------------------------------------------------------
-def handle_extraction(category_key: str):
-    # project_files = project_manager.list_files_in_category(current_project, category_key)
-    return project_manager.run_extraction(current_project, category_key)
+#def handle_extraction(category_key: str):
+#    # project_files = project_manager.list_files_in_category(current_project, category_key)
+#    return project_manager.run_extraction(current_project, category_key)
 
 
 
@@ -84,7 +84,7 @@ def render_extraction_interface(category_key: str, category_info: Dict, files: L
     if st.button(f"🤖 Iniciar Extração de IA para **{category_info['name']}**", key=f"extract_{category_key}", type="primary", use_container_width=True):
         with st.spinner(f"Analisando documentos e extraindo dados de '{category_info['name']}'..."):
 
-            success = handle_extraction(category_key) #<-- Chama extracao
+            success = project_manager.run_extraction(current_project, category_key) #<-- Chama extracao
 
             if success:
                 st.success(f"✅ Extração de '{category_info['name']}' concluída!")

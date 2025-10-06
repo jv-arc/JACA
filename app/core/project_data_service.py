@@ -1,5 +1,5 @@
 import json
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, Any
 from datetime import datetime
 
 from app.core.path_manager import PathManager
@@ -7,6 +7,8 @@ from app.core.logger import Logger
 from app.core.project_crud_service import ProjectCRUDService
 from app.core.data_manager import ExtractedDataManager
 from app.core.ai_client import GeminiClient
+
+from app.core.models import *
 
 
 #================================================================
@@ -41,9 +43,6 @@ class ProjectDataService:
                 return True
         return False
     
-
-
-
 
 
 
@@ -103,12 +102,12 @@ class ProjectDataService:
     def save_structured_extraction(self, project_name: str, category: str, data: Dict) -> bool:
         content_fields = data.get('content_fields', {})
         ignored_fields = data.get('ignored_fields', {})
-        main_content = data.get('main_content', {})
+        consolidated_text = data.get('main_content', {})
 
         final_data_obj = {
             'content_fields': content_fields,
             'ignored_fields': ignored_fields,
-            'consolidated_text': self.extraction_manager.consolidate_content_fields(main_content),
+            'consolidated_text': consolidated_text,
             'workflow_used': category,
             'extracted_at': datetime.now().isoformat(),
             'last_modified': datetime.now().isoformat(),
@@ -155,8 +154,11 @@ class ProjectDataService:
     #----------------------------------------------------------------
     # Salva texto consolidado editado
     #----------------------------------------------------------------
-    def load_extracted_text(self, project_name: str, category: str) -> Optional[str]:
-        data = self.load_structured_extraction(project_name, category)
+    def load_consolidated_text(self, project_name: str, category: str) -> Optional[str]:
+        try:
+            data = self.load_structured_extraction(project_name, category)
+        
+        
         return data.get('consolidated_text', '') if data else None
         
 
@@ -200,7 +202,7 @@ class ProjectDataService:
     #----------------------------------------------------------------
     # Obtém texto consolidado de todas as categorias
     #----------------------------------------------------------------
-    def get_consolidated_text(self, project_name: str) -> str:
+    def get_list_consolidated_text(self, project_name: str) -> str:
         categories = ["estatuto", "ata", "identificacao", "licenca", "programacao"]
         consolidated_texts = []
         
@@ -219,11 +221,17 @@ class ProjectDataService:
     #----------------------------------------------------------------
     # Obtem os campos de extracao de dados
     #----------------------------------------------------------------
-    def get_workflow_fields(self, category: str) -> List[str]:
-        return self.extraction_manager.WORKFLOWS.get(category, [])
+    def get_workflow_fields(self, category: str) -> Dict[str, List[str]] | List[Any]:
+        return self.extraction_manager.workflows.get(category, [])
     
 
 
+    #----------------------------------------------------------------
+    # Obtem os dados extraídos no projeto
+    #----------------------------------------------------------------
+    def get_extracted_data(self, project_name, category)-> Dict|None:
+        project_data = self.crud_service.load_project(project_name)
+        return getattr(project_data, category, None)
 
 
 

@@ -19,55 +19,55 @@ from app.core.path_manager import PathManager
     
 class ExtractedDataManager:
 
-    WORKFLOWS = {
-        'estatuto': {
-            'content_fields': [
-                'article_1', 'article_2', 'article_3', 'objectives',
-                'governance', 'bylaws_text', 'main_content'
-            ],
-            'ignored_fields': [
-                'headers', 'footers', 'page_numbers', 'signatures',
-                'stamps', 'letterhead', 'carimbo'
-            ]
-        },
-        'ata': {
-            'content_fields': [
-                'meeting_date', 'attendees', 'agenda', 'decisions',
-                'resolutions', 'meeting_content', 'main_content'
-            ],
-            'ignored_fields': [
-                'headers', 'footers', 'page_numbers', 'signatures',
-                'stamps', 'letterhead', 'carimbo', 'formatting'
-            ]
-        },
-        'licenca': {
-            'content_fields': [
-                'license_number', 'validity', 'conditions', 'restrictions',
-                'license_content', 'main_content'
-            ],
-            'ignored_fields': [
-                'headers', 'footers', 'page_numbers', 'signatures',
-                'stamps', 'letterhead', 'carimbo'
-            ]
-        },
-        'programacao': {
-            'content_fields': [
-                'schedule', 'activities', 'timeline', 'program_content',
-                'main_content'
-            ],
-            'ignored_fields': [
-                'headers', 'footers', 'page\_numbers', 'signatures',
-                'stamps', 'letterhead', 'carimbo'
-            ]
-        }
-    }
-    
-
     def __init__(self, gemini_client: GeminiClient):
         self.gemini_client = gemini_client
         self.prompt_manager = PromptManager()
         self.path = PathManager
         self.logger = Logger(name="ExtractedDataManager")
+        
+        # Era melhor tirar isso daqui
+        self.workflows = {
+            'estatuto': {
+                'content_fields': [
+                    'article_1', 'article_2', 'article_3', 'objectives',
+                    'governance', 'bylaws_text', 'main_content'
+                ],
+                'ignored_fields': [
+                    'headers', 'footers', 'page_numbers', 'signatures',
+                    'stamps', 'letterhead', 'carimbo'
+                ]
+            },
+            'ata': {
+                'content_fields': [
+                    'meeting_date', 'attendees', 'agenda', 'decisions',
+                    'resolutions', 'meeting_content', 'main_content'
+                ],
+                'ignored_fields': [
+                    'headers', 'footers', 'page_numbers', 'signatures',
+                    'stamps', 'letterhead', 'carimbo', 'formatting'
+                ]
+            },
+            'licenca': {
+                'content_fields': [
+                    'license_number', 'validity', 'conditions', 'restrictions',
+                    'license_content', 'main_content'
+                ],
+                'ignored_fields': [
+                    'headers', 'footers', 'page_numbers', 'signatures',
+                    'stamps', 'letterhead', 'carimbo'
+                ]
+            },
+            'programacao': {
+                'content_fields': [
+                    'schedule', 'activities', 'timeline', 'program_content',
+                    'main_content'
+                ],
+                'ignored_fields': [
+                    'headers', 'footers', 'page\_numbers', 'signatures',
+                    'stamps', 'letterhead', 'carimbo'
+                ]
+            }
+        }
         self.logger.info("Classe inicializada com sucesso.")
 
 
@@ -155,7 +155,7 @@ class ExtractedDataManager:
 
         extracted_content = self._extract_content_from_files(file_paths)
         extracted_json = None
-        workflow = self.WORKFLOWS.get(category, {})
+        workflow = self.workflows.get(category, {})
         model_name = self.gemini_client.settings.extraction_model
 
         if extracted_content['type'] == 'text':
@@ -211,7 +211,7 @@ class ExtractedDataManager:
 
     def create_empty_extraction_data(self, category: str) -> StructuredExtraction:
         
-        wf = self.WORKFLOWS.get(category, {})
+        wf = self.workflows.get(category, {})
         return StructuredExtraction(
             content_fields={f: "" for f in wf.get("content_fields", [])},
             ignored_fields={f: "" for f in wf.get("ignored_fields", [])},
@@ -262,18 +262,17 @@ class ExtractedDataManager:
             return None
         
     def _consolidate_content_fields(self, content_fields: Dict[str, str]) -> str:
-        
         # Remove campos vazios e consolida
         useful_texts = [value.strip() for value in content_fields.values() if value.strip()]
         return '\n\\n'.join(useful_texts)
                              
     def get_workflow_fields(self, category: str) -> Dict[str, List[str]]:
-        return self.WORKFLOWS.get(category, self.WORKFLOWS['estatuto'])
+        return self.workflows.get(category, self.workflows['estatuto'])
 
 
     # Cria estrutura vazia para uma categoria
     def _create_empty_extraction_data(self, category: str) -> Dict:
-        workflow = self.WORKFLOWS.get(category, self.WORKFLOWS['estatuto'])
+        workflow = self.workflows.get(category, self.workflows['estatuto'])
         return {
             'content_fields': {field: '' for field in workflow['content_fields']},
             'ignored_fields': {field: '' for field in workflow['ignored_fields']},
@@ -308,3 +307,5 @@ class ExtractedDataManager:
         except Exception as e:
             self.logger.error(f"Erro ao escrever dados de categoria '{category}' em '{file_obj}' para projeto '{project_name}': \n\n {e}")
             return False
+
+    

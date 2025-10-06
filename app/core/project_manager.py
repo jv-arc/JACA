@@ -90,6 +90,9 @@ class ProjectManager:
     def run_extraction(self, project_name: str, category: str) -> Optional[Dict]:
         return self.workflow.run_extraction_for_category(project_name, category)
 
+    def run_secondary_extraction(self, project_name:str, category:str)-> bool:
+        return self.workflow.run_secondary_extraction(project_name, category)
+
     def load_structured_extraction(self, project_name: str, category: str) -> Optional[Dict]:
         return self.data.load_structured_extraction(project_name, category)
 
@@ -120,9 +123,6 @@ class ProjectManager:
     def update_director_list(self, project_name: str, directors: List[Dict]) -> bool:
         return self.data.update_director_list(project_name, directors)
     
-    def run_secondary_extraction(self, project_name:str, category:str)-> bool:
-        self.logger.warning("Método run_secondary_extraction ainda não implementado")
-        return False
     
     
     # -----------------------
