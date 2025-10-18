@@ -13,7 +13,7 @@ class Logger:
     
     def __init__(self, name: str):
         self.name = name
-        self.logfile = "/home/jvctr/0/NOW/JACA/app/core/log.txt"
+        self.logfile = "/home/jvctr/winboat_workspace/repos/JACA/log.txt"
         self.logger = logging.getLogger(name)
         self.logger.setLevel(logging.INFO)
 

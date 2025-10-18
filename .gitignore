@@ -1,2 +1,10 @@
+# Basic Privacy
 .env
 app_config.json.bak
+
+# Windows and Linux Separated Virtual Environments
+.linux_venv/*
+!.linux_venv/.gitkeep
+
+.windows_venv/*
+!.windows_venv/.gitkeep

@@ -1,7 +1,0 @@
-services:
-  pyinstaller:
-    container_name: pyinstaller_test
-    build:
-      context: .
-      dockerfile: Dockerfile
-    command: ["tail", "-f", "/dev/null"]

@@ -1,10 +1,12 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-if [[ -f ./.venv/bin/activate ]]; then
-  source ./.venv/bin/activate
+
+
+if [[ -f .linux_venv/bin/activate ]]; then
+  source .linux_venv/bin/activate
 else
-  echo "Error: Virtualenv not found at ./.venv/bin/activate" >&2
+  echo "Error: Virtual Environment not found at $VENV_PATH" >&2
   exit 1
 fi
 
