@@ -1,3 +1,4 @@
+from pathlib import Path
 import logging
 import sys
 from logging.handlers import RotatingFileHandler
@@ -13,7 +14,7 @@ class Logger:
     
     def __init__(self, name: str):
         self.name = name
-        self.logfile = "/home/jvctr/winboat_workspace/repos/JACA/log.txt"
+        self.logfile = Path(__file__).parent.parent / "log.txt" 
         self.logger = logging.getLogger(name)
         self.logger.setLevel(logging.INFO)
 

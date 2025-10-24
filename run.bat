@@ -2,12 +2,23 @@
 setlocal EnableDelayedExpansion
 
 
-
-
-set VENV_PATH="%~dp0\.windows_venv"
+set VENV_PATH="%~dp0.windows_venv"
 set PYTHON_VERSION=3.10.10
 
+set DLL_DOWNLOAD_URL="https://aka.ms/vs/17/release/vc_redist.x64.exe"
+set DLL_DIR="C:\Windows\System32\"
+set DLL_PATH="%TEMP%\VC_redist.x64.exe"
 
+echo Checking if the needed DLLs are installed
+
+if not exist "%DLL_DIR%\MSVCP140.dll" (
+    echo MSVCP140.dll not installed
+
+    echo Downloading MSVCP140.dll
+    bitsadmin /transfer dlldownload /download /priority FOREGROUND "%DLL_DOWNLOAD_URL%" "%DLL_PATH%"
+    "%DLL_PATH%"
+)
+echo DLL installed continuing...
 
 echo Checking if Python is installed...
 
