@@ -1,19 +1,21 @@
-import google.generativeai as genai
+from google import genai
+from google.genai import types
 import json
 from typing import Dict, Optional, List
 from PIL import Image
 
 from app.core.config import Settings
 from app.core.logger import Logger
+
+
 #===========================================================================
 # CLASSE: GeminiClient
 #---------------------------------------------------------------------------
 # Uma classe que trata a conexao do programa e a API do Gemini do Google
 # utiliza a chave de API obtida pela classe Settings
 #===========================================================================
+
 class GeminiClient:
-
-
 
     #---------------------------------------------------------------------------------
     # Inicializa classe
@@ -30,13 +32,13 @@ class GeminiClient:
             raise ValueError("A API key não pode ser vazia.")
 
         try:
-            genai.configure(api_key=self.settings.api_key)
+            # Criar o cliente com a API key
+            self.client = genai.Client(api_key=self.settings.api_key)
             self._is_configured = True 
             self.logger.info("Cliente Gemini configurado com sucesso.")
 
         except Exception as e:
             self.logger.critical(f"Falha ao configurar a API do Gemini: {e}")
-
 
 
     #---------------------------------------------------------------------------------
@@ -52,43 +54,48 @@ class GeminiClient:
 
         try:
             self.logger.info(f"Gerando texto com o modelo: {model_name}...")
-            model = genai.GenerativeModel(model_name)
-            response = model.generate_content(prompt)
+            
+            response = self.client.models.generate_content(
+                model=model_name,
+                contents=prompt
+            )
             
             # Acessa o texto de forma segura
-            if response.parts:
+            if response.text:
                 return response.text
             else:
-                # Se não houver 'parts', pode ser que a resposta foi bloqueada.
-                self.logger.warning("A resposta do modelo não contém 'parts'. Pode ter sido bloqueada ou estar vazia.")
+                self.logger.warning("A resposta do modelo não contém texto. Pode ter sido bloqueada ou estar vazia.")
                 return None
 
         except Exception as e:
             self.logger.error(f"Erro durante a chamada para a API Gemini: \n\n {e}", exc_info=True)
             return None
 
+
     #---------------------------------------------------------------------------------
     # Gera um Dicionário com Gemini
     #---------------------------------------------------------------------------------
     # Recebe: um prompt, um nome de modelo
-    # Retorno: Retorna um dicíonario Python com os dados extraídos ou none 
+    # Retorno: Retorna um dicionário Python com os dados extraídos ou none 
     #---------------------------------------------------------------------------------
     def generate_json_from_prompt(self, prompt: str, model_name: str) -> Optional[Dict]:
         if not self._is_configured:
             self.logger.error("Cliente Gemini não configurado. Impossível gerar JSON.")
             return None
-
-        generation_config = genai.types.GenerationConfig(
-            response_mime_type="application/json"
-        )
         
         try:
             self.logger.info(f"Gerando JSON com o modelo: {model_name}...")
-            model = genai.GenerativeModel(model_name, generation_config=generation_config)
-            response = model.generate_content(prompt)
+            
+            response = self.client.models.generate_content(
+                model=model_name,
+                contents=prompt,
+                config=types.GenerateContentConfig(
+                    response_mime_type="application/json"
+                )
+            )
 
-            if not response.parts:
-                 self.logger.warning("A resposta do modelo (JSON mode) não contém 'parts'. Pode ter sido bloqueada.")
+            if not response.text:
+                 self.logger.warning("A resposta do modelo (JSON mode) não contém texto. Pode ter sido bloqueada.")
                  return None
 
             response_text = response.text
@@ -101,6 +108,9 @@ class GeminiClient:
             self.logger.error(f"Erro durante a chamada para a API Gemini (JSON mode): {e}", exc_info=True)
             return None
         
+    #---------------------------------------------------------------------------------
+    # Gera JSON com prompt multimodal (texto + imagens)
+    #---------------------------------------------------------------------------------
     def generate_json_from_multimodal_prompt(
             self, 
             text_prompt: str, 
@@ -113,24 +123,23 @@ class GeminiClient:
             if not images:
                 self.logger.error("Nenhuma imagem fornecida para o prompt multimodal.")
                 return None
-    
-            # Configuração para forçar a saída em JSON
-            generation_config = genai.types.GenerationConfig(
-                response_mime_type="application/json"
-            )
             
             try:
                 self.logger.info(f"Gerando JSON com o modelo multimodal: {model_name}...")
-                
-                model = genai.GenerativeModel(model_name, generation_config=generation_config)
                 
                 # Constrói o conteúdo da requisição com o texto de instrução primeiro,
                 # seguido pela lista de imagens das páginas do documento.
                 content_parts = [text_prompt] + images
                 
-                response = model.generate_content(content_parts)
+                response = self.client.models.generate_content(
+                    model=model_name,
+                    contents=content_parts,
+                    config=types.GenerateContentConfig(
+                        response_mime_type="application/json"
+                    )
+                )
     
-                if not response.parts:
+                if not response.text:
                      self.logger.warning("A resposta do modelo multimodal não contém dados.")
                      return None
     

@@ -52,11 +52,11 @@ class Settings:
         self.save_config()
 
 
-    def update_extraction_model(self, new_model):
+    def update_extraction_model(self, new_model: str) -> None:
         self.extraction_model = new_model
         self.save_config()
 
-    def update_criteria_model(self, new_model):
+    def update_criteria_model(self, new_model: str) -> None:
         self.criteria_model = new_model
         self.save_config()
 

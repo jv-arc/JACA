@@ -1,14 +1,23 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+PROJECT_DIR=$(pwd)
+VENV_PATH="$PROJECT_DIR/.linux_venv"
 
 
-if [[ -f .linux_venv/bin/activate ]]; then
-  source .linux_venv/bin/activate
-else
-  echo "Error: Virtual Environment not found at $VENV_PATH" >&2
-  exit 1
+echo "Checking Python Virtual Environment"
+
+if [[ ! -f "$VENV_PATH/bin/activate" ]]; then
+    echo "Creating virtual environment: $VENV_PATH"
+    python3 -m venv "$VENV_PATH"
 fi
+
+source "$VENV_PATH/bin/activate"
+
+
+echo "Checking Libraries"
+pip install -r requirements.txt
+
 
 if [[ -f .env ]]
  then

@@ -213,3 +213,46 @@
 2025-10-24 15:23:32,553 - ProjectWorkflowOrchestrator - INFO - logger.py:50 - Serviço de workflow inicializado com sucesso
 2025-10-24 15:23:32,553 - ProjectManager - INFO - logger.py:50 - ProjectManager inicializado corretamente
 2025-10-24 15:23:32,554 - Init-Home - INFO - logger.py:50 - ✅ Aplicação iniciada e serviços carregados.
+2025-10-24 17:09:03,130 - GeminiClient - INFO - logger.py:50 - Cliente Gemini configurado com sucesso.
+2025-10-24 17:09:03,130 - ProjectCRUDService - INFO - logger.py:50 - Servico inicializado com sucesso.
+2025-10-24 17:09:03,131 - ProjectCRUDService - INFO - logger.py:50 - Servico inicializado com sucesso.
+2025-10-24 17:09:03,131 - ProjectFileManager - INFO - logger.py:50 - Serviço iniciado com suscesso.
+2025-10-24 17:09:03,213 - PdfGenerator - INFO - logger.py:50 - Classe inicializada com sucesso
+2025-10-24 17:09:03,213 - ReportConfigManager - INFO - logger.py:50 - Carregando configuração de relatório de '/home/jvctr/winboat_workspace/repos/JACA/app/data/app_config.json'...
+2025-10-24 17:09:03,213 - ReportConfigManager - INFO - logger.py:50 - Configuração de relatório carregada com sucesso.
+2025-10-24 17:09:03,213 - ReportConfigManager - INFO - logger.py:50 - Classe inicializada corretamente
+2025-10-24 17:09:03,213 - ExportManager - INFO - logger.py:50 - ExportManager inicializado.
+2025-10-24 17:09:03,214 - ProjectCRUDService - INFO - logger.py:50 - Servico inicializado com sucesso.
+2025-10-24 17:09:03,214 - ReportConfigManager - INFO - logger.py:50 - Carregando configuração de relatório de '/home/jvctr/winboat_workspace/repos/JACA/app/data/app_config.json'...
+2025-10-24 17:09:03,214 - ReportConfigManager - INFO - logger.py:50 - Configuração de relatório carregada com sucesso.
+2025-10-24 17:09:03,214 - ReportConfigManager - INFO - logger.py:50 - Classe inicializada corretamente
+2025-10-24 17:09:03,214 - ProjectConfigurationService - INFO - logger.py:50 - Serviço inicializado com sucesso
+2025-10-24 17:09:03,214 - ProjectCRUDService - INFO - logger.py:50 - Servico inicializado com sucesso.
+2025-10-24 17:09:03,244 - PdfGenerator - INFO - logger.py:50 - Classe inicializada com sucesso
+2025-10-24 17:09:03,245 - ReportConfigManager - INFO - logger.py:50 - Carregando configuração de relatório de '/home/jvctr/winboat_workspace/repos/JACA/app/data/app_config.json'...
+2025-10-24 17:09:03,245 - ReportConfigManager - INFO - logger.py:50 - Configuração de relatório carregada com sucesso.
+2025-10-24 17:09:03,245 - ReportConfigManager - INFO - logger.py:50 - Classe inicializada corretamente
+2025-10-24 17:09:03,245 - ExportManager - INFO - logger.py:50 - ExportManager inicializado.
+2025-10-24 17:09:03,245 - DocumentPackageService - INFO - logger.py:50 - Serviço inicializado com sucesso
+2025-10-24 17:09:03,245 - ProjectCRUDService - INFO - logger.py:50 - Servico inicializado com sucesso.
+2025-10-24 17:09:03,245 - ExtractedDataManager - INFO - logger.py:50 - Classe inicializada com sucesso.
+2025-10-24 17:09:03,245 - ProjectDataService - INFO - logger.py:50 - Serviço inicializado com sucesso
+2025-10-24 17:09:03,245 - ExtractedDataManager - INFO - logger.py:50 - Classe inicializada com sucesso.
+2025-10-24 17:09:03,245 - CriteriaManager - INFO - logger.py:50 - Carregando critérios de /home/jvctr/winboat_workspace/repos/JACA/app/data/criteria_database.json...
+2025-10-24 17:09:03,245 - CriteriaManager - INFO - logger.py:50 - 3 critérios carregados com sucesso.
+2025-10-24 17:09:03,245 - CriteriaManager - INFO - logger.py:50 - Serviço inicializado com sucesso
+2025-10-24 17:09:03,246 - ProjectCRUDService - INFO - logger.py:50 - Servico inicializado com sucesso.
+2025-10-24 17:09:03,246 - ExtractedDataManager - INFO - logger.py:50 - Classe inicializada com sucesso.
+2025-10-24 17:09:03,246 - ProjectDataService - INFO - logger.py:50 - Serviço inicializado com sucesso
+2025-10-24 17:09:03,246 - ProjectCRUDService - INFO - logger.py:50 - Servico inicializado com sucesso.
+2025-10-24 17:09:03,275 - PdfGenerator - INFO - logger.py:50 - Classe inicializada com sucesso
+2025-10-24 17:09:03,275 - ReportConfigManager - INFO - logger.py:50 - Carregando configuração de relatório de '/home/jvctr/winboat_workspace/repos/JACA/app/data/app_config.json'...
+2025-10-24 17:09:03,276 - ReportConfigManager - INFO - logger.py:50 - Configuração de relatório carregada com sucesso.
+2025-10-24 17:09:03,276 - ReportConfigManager - INFO - logger.py:50 - Classe inicializada corretamente
+2025-10-24 17:09:03,276 - ExportManager - INFO - logger.py:50 - ExportManager inicializado.
+2025-10-24 17:09:03,276 - ReportConfigManager - INFO - logger.py:50 - Carregando configuração de relatório de '/home/jvctr/winboat_workspace/repos/JACA/app/data/app_config.json'...
+2025-10-24 17:09:03,276 - ReportConfigManager - INFO - logger.py:50 - Configuração de relatório carregada com sucesso.
+2025-10-24 17:09:03,276 - ReportConfigManager - INFO - logger.py:50 - Classe inicializada corretamente
+2025-10-24 17:09:03,276 - ProjectWorkflowOrchestrator - INFO - logger.py:50 - Serviço de workflow inicializado com sucesso
+2025-10-24 17:09:03,276 - ProjectManager - INFO - logger.py:50 - ProjectManager inicializado corretamente
+2025-10-24 17:09:03,276 - Init-Home - INFO - logger.py:50 - ✅ Aplicação iniciada e serviços carregados.

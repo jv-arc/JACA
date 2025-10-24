@@ -300,18 +300,6 @@ class ProjectWorkflowOrchestrator:
 
 
     #----------------------------------------------------------------
-    # Valida conexão com a API externa (p.ex. Gemini)
-    #----------------------------------------------------------------
-    def test_api_connection(self) -> bool:
-        self.logger.info("Testando conexão com API externa.")
-        return self.ai.test_connection()
-
-
-
-
-
-
-    #----------------------------------------------------------------
     # Valida se o projeto está pronto para exportação
     #----------------------------------------------------------------
     def validate_project_readiness(self, project_name: str) -> Dict[str, bool]:
