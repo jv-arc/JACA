@@ -99,7 +99,7 @@ class ExtractedDataManager:
 
     def _extract_content_from_files(self, file_paths: List[Path]) -> Dict:
         texts: List[str] = []
-        images: List[Image.Image] = []
+        images: List[bytes]= []
         docx_endings = [".docx", ".DOCX"]
         pdf_endings = [".pdf", ".PDF"]
 
@@ -123,10 +123,7 @@ class ExtractedDataManager:
                         else:
                             self.logger.warning(f"Página {page_num+1} de {os.path.basename(path)} não contém texto. Tratando como imagem.")
                             pix = page.get_pixmap()
-                            img = Image.frombytes(
-                                "RGB", (pix.width, pix.height), pix.samples
-                            )
-                            images.append(img)
+                            images.append(pix.tobytes())
                     if has_text_content:
                         self.logger.info(f"PDF '{os.path.basename(path)} processado como documento de texto")
                     pdf_doc.close()

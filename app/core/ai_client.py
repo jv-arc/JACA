@@ -1,8 +1,8 @@
 from google import genai
 from google.genai import types
+
 import json
 from typing import Dict, Optional, List
-from PIL import Image
 
 from app.core.config import Settings
 from app.core.logger import Logger
@@ -60,7 +60,6 @@ class GeminiClient:
                 contents=prompt
             )
             
-            # Acessa o texto de forma segura
             if response.text:
                 return response.text
             else:
@@ -114,7 +113,7 @@ class GeminiClient:
     def generate_json_from_multimodal_prompt(
             self, 
             text_prompt: str, 
-            images: List[Image.Image], 
+            images: List[bytes], 
             model_name: str
         ) -> Optional[Dict]:
             if not self._is_configured:
@@ -126,14 +125,12 @@ class GeminiClient:
             
             try:
                 self.logger.info(f"Gerando JSON com o modelo multimodal: {model_name}...")
-                
-                # Constrói o conteúdo da requisição com o texto de instrução primeiro,
-                # seguido pela lista de imagens das páginas do documento.
-                content_parts = [text_prompt] + images
-                
+
                 response = self.client.models.generate_content(
                     model=model_name,
-                    contents=content_parts,
+                    contents=[ text_prompt,
+                        [types.Part.from_bytes(data=img_bytes, mime_type='images/jpeg') for img_bytes in images]
+                    ],
                     config=types.GenerateContentConfig(
                         response_mime_type="application/json"
                     )
@@ -152,3 +149,6 @@ class GeminiClient:
             except Exception as e:
                 self.logger.error(f"Erro durante a chamada para a API Gemini (multimodal): {e}", exc_info=True)
                 return None
+
+
+        
