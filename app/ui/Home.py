@@ -1,44 +1,13 @@
 import streamlit as st
 
-from app.core.ai_client import GeminiClient
 from app.core.project_manager import ProjectManager
 from app.core.logger import Logger
-from app.core.export_manager import ExportManager
 from app.core.path_manager import PathManager
-from app.core.project_data_service import ProjectDataService
-from app.core.project_workflow_orchestrator import ProjectWorkflowOrchestrator
-from app.core.project_crud_service import ProjectCRUDService
-from app.core.project_file_manager import ProjectFileManager
-from app.core.project_configuration_service import ProjectConfigurationService
-from app.core.document_package_service import DocumentPackageService
 
 @st.cache_resource
 def initialize_services():
     ui_logger = Logger(name='Init-Home')
-
-    ai = GeminiClient()
-
-    crud = ProjectCRUDService()
-    file = ProjectFileManager()
-    path = PathManager()
-    export = ExportManager()
-    config = ProjectConfigurationService()
-    package = DocumentPackageService()
-
-    data = ProjectDataService(gemini_client=ai)
-    workflow = ProjectWorkflowOrchestrator(gemini_client=ai)
-
-
-    project_manager = ProjectManager(
-        data_service = data,
-        workflow_orchestrator = workflow,
-        crud_service = crud,
-        file_manager = file,
-        path_manager = path,
-        export_manager = export,
-        config_service = config,
-        document_package_service = package 
-    )
+    project_manager = ProjectManager()
     
     ui_logger.info("✅ Aplicação iniciada e serviços carregados.")
 

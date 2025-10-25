@@ -6,7 +6,7 @@ from app.core.path_manager import PathManager
 from app.core.logger import Logger
 from app.core.project_crud_service import ProjectCRUDService
 from app.core.data_manager import ExtractedDataManager
-from app.core.ai_client import GeminiClient
+from app.core.ai_client import gemini_client
 
 from app.core.models import *
 
@@ -24,10 +24,10 @@ from app.core.models import *
 class ProjectDataService:
 
 
-    def __init__(self, gemini_client: GeminiClient):
+    def __init__(self):
         self.logger = Logger("ProjectDataService")
         self.crud_service = ProjectCRUDService()
-        self.extraction_manager = ExtractedDataManager(gemini_client=gemini_client)
+        self.extraction_manager = ExtractedDataManager()
         self.logger.info("Serviço inicializado com sucesso")
     
     

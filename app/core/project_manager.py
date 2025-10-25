@@ -10,7 +10,7 @@ from app.core.project_configuration_service import ProjectConfigurationService
 from app.core.models import ProjectState
 from app.core.export_manager import ExportManager
 from app.core.path_manager import PathManager
-
+from app.core.app_configuration_service import AppConfigService
 #===========================================================
 # Classe: ProjectManager
 #-----------------------------------------------------------
@@ -19,27 +19,18 @@ from app.core.path_manager import PathManager
 #===========================================================
 class ProjectManager:
     
-    def __init__(
-        self, 
-        data_service: ProjectDataService,
-        workflow_orchestrator: ProjectWorkflowOrchestrator,
-        crud_service : ProjectCRUDService,
-        file_manager : ProjectFileManager,
-        path_manager : PathManager,
-        export_manager : ExportManager,
-        config_service : ProjectConfigurationService,
-        document_package_service : DocumentPackageService
-    ):
+    def __init__(self):
         self.logger = Logger("ProjectManager")
 
-        self.data = data_service
-        self.workflow = workflow_orchestrator
-        self.crud = crud_service
-        self.file = file_manager
-        self.path = path_manager
-        self.export = export_manager,
-        self.config = config_service
-        self.packages = document_package_service
+        self.data = ProjectDataService()
+        self.workflow = ProjectWorkflowOrchestrator()
+        self.crud = ProjectCRUDService()
+        self.file = ProjectFileManager()
+        self.path = PathManager()
+        self.export = ExportManager()
+        self.config = ProjectConfigurationService()
+        self.app_config = AppConfigService()
+        self.packages = DocumentPackageService()
         
         self.logger.info("ProjectManager inicializado corretamente")
 

@@ -18,9 +18,7 @@ from app.core.report_config_manager import ReportConfigManager
 
 
 
-
 class ProjectConfigurationService:
-
     def __init__(self):
         self.logger = Logger("ProjectConfigurationService")
         self.crud_service = ProjectCRUDService()
@@ -277,3 +275,7 @@ class ProjectConfigurationService:
         except Exception as e:
             errors.append(f"Erro durante validação: {str(e)}")
             return False, errors
+
+    #----------------------------------------------------------------
+    # Atualiza chaves de API Gemini
+    #----------------------------------------------------------------

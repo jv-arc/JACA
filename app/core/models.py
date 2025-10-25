@@ -20,7 +20,7 @@ class ExtractedDataType(BaseModel):
     licenca: Optional[StructuredExtraction] = None
     programacao: Optional[StructuredExtraction] = None
 
-# Container para tos dados do projeto
+# Container para os dados do projeto
 class ProjectState(BaseModel):
     name: str
     path: Optional[str] = None 
@@ -33,7 +33,7 @@ class ProjectState(BaseModel):
     
     def save_to_file(self, path: str):
         with open(path, 'w') as f:
-            json.dump(self.dict(), f, indent=2)
+            json.dump(self.model_dump(), f, indent=2)
     
     @classmethod
     def load_from_file(cls, path: str):

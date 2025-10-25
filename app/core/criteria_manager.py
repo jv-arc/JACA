@@ -1,7 +1,7 @@
 import json
 from typing import List, Dict, Optional
 
-from app.core.ai_client import GeminiClient
+from app.core.ai_client import gemini_client
 from app.core.prompt_manager import PromptManager
 from app.core.logger import Logger
 from app.core.models import ProjectState
@@ -14,7 +14,7 @@ from app.core.path_manager import PathManager
 class CriteriaManager:
     
 
-    def __init__(self, gemini_client: GeminiClient):
+    def __init__(self):
         self.logger = Logger(name="CriteriaManager")
         self.ai = gemini_client
         self.prompt = PromptManager()

@@ -9,9 +9,9 @@ from app.core.export_manager import ExportManager
 from app.core.report_config_manager import ReportConfigManager
 from app.core.project_data_service import ProjectDataService
 from app.core.prompt_manager import PromptManager
-from app.core.ai_client import GeminiClient
+from app.core.ai_client import gemini_client
 from app.core.logger import Logger
-from app.core.config import Settings
+from app.core.config import settings
 
 #================================================================
 # CLASS: ProjectWorkflowOrchestrator
@@ -23,10 +23,10 @@ from app.core.config import Settings
 
 class ProjectWorkflowOrchestrator:
 
-    def __init__(self, gemini_client: GeminiClient):
-        self.extract = ExtractedDataManager(gemini_client=gemini_client)
-        self.criteria = CriteriaManager(gemini_client=gemini_client)
-        self.data = ProjectDataService(gemini_client=gemini_client)
+    def __init__(self):
+        self.extract = ExtractedDataManager()
+        self.criteria = CriteriaManager()
+        self.data = ProjectDataService()
 
         self.logger = Logger("ProjectWorkflowOrchestrator")
         self.prompt = PromptManager()
@@ -35,7 +35,7 @@ class ProjectWorkflowOrchestrator:
         self.report = ReportConfigManager()
         self.path = PathManager
         self.ai = gemini_client
-        self.conf = Settings()
+        self.conf = settings
 
         self.logger.info("Serviço de workflow inicializado com sucesso")
 

@@ -4,7 +4,7 @@ from google.genai import types
 import json
 from typing import Dict, Optional, List
 
-from app.core.config import Settings
+from app.core.config import settings
 from app.core.logger import Logger
 
 
@@ -15,7 +15,7 @@ from app.core.logger import Logger
 # utiliza a chave de API obtida pela classe Settings
 #===========================================================================
 
-class GeminiClient:
+class _GeminiClient:
 
     #---------------------------------------------------------------------------------
     # Inicializa classe
@@ -23,7 +23,7 @@ class GeminiClient:
     # Inicializa a classe criando uma conexão 
     #---------------------------------------------------------------------------------
     def __init__(self):
-        self.settings = Settings()
+        self.settings = settings
         self.logger = Logger("GeminiClient")
         self._is_configured = False
         
@@ -186,3 +186,5 @@ class GeminiClient:
         except Exception as e:
             self.logger.critical(f"Falha ao configurar a API do Gemini: {e}")
             return False
+
+gemini_client = _GeminiClient()

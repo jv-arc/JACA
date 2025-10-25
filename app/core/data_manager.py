@@ -8,7 +8,7 @@ from typing import Optional, Dict, List
 from pathlib import Path
 
 
-from app.core.ai_client import GeminiClient
+from app.core.ai_client import gemini_client_singleton
 from app.core.prompt_manager import PromptManager
 from app.core.logger import Logger
 from app.core.models import StructuredExtraction
@@ -19,8 +19,8 @@ from app.core.path_manager import PathManager
     
 class ExtractedDataManager:
 
-    def __init__(self, gemini_client: GeminiClient):
-        self.gemini_client = gemini_client
+    def __init__(self):
+        self.gemini_client = gemini_client_singleton
         self.prompt_manager = PromptManager()
         self.path = PathManager
         self.logger = Logger(name="ExtractedDataManager")
