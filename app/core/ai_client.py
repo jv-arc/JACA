@@ -20,7 +20,7 @@ class GeminiClient:
     #---------------------------------------------------------------------------------
     # Inicializa classe
     #---------------------------------------------------------------------------------
-    # Inicializa a classe criando e testando uma conexão 
+    # Inicializa a classe criando uma conexão 
     #---------------------------------------------------------------------------------
     def __init__(self):
         self.settings = Settings()
@@ -150,5 +150,39 @@ class GeminiClient:
                 self.logger.error(f"Erro durante a chamada para a API Gemini (multimodal): {e}", exc_info=True)
                 return None
 
+    #---------------------------------------------------------------------------------
+    # Gera uma mensagem simples para verificar a conexão 
+    #---------------------------------------------------------------------------------
+    def test_api_connection(self, model_name: str) -> bool:
+        response = self.client.models.generate_content(
+            model=model_name,
+            contents= 'your answer should be exactly:OK',
+            config= types.GenerateContentConfig(
+                response_mime_type="application/json"
+            )
+        )
 
-        
+        return (response.text == "OK")
+    
+    #---------------------------------------------------------------------------------
+    # Reconfigura classe fechando a conexão e abrindo uma nova
+    #---------------------------------------------------------------------------------
+    def reload(self) -> bool:
+        if self._is_configured and hasattr(self, "client"):
+            self.client.close()
+            self._is_configured = False
+            self.logger.info("Fechando cliente Google GenAI")
+
+        if not self.settings.api_key:
+            self.logger.critical("API key do Gemini não foi fornecida nas configurações.")
+            raise ValueError("A API key não pode ser vazia.")
+
+        try:
+            self.client = genai.Client(api_key=self.settings.api_key)
+            self._is_configured = True 
+            self.logger.info("Cliente Gemini configurado com sucesso.")
+            return True
+
+        except Exception as e:
+            self.logger.critical(f"Falha ao configurar a API do Gemini: {e}")
+            return False
