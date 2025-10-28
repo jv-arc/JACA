@@ -32,7 +32,7 @@ class ProjectConfigurationService:
     #----------------------------------------------------------------
     # Obtém configuração de relatório
     #----------------------------------------------------------------
-    def get_report_configuration(self, project_name: Optional[str] = None) -> Dict:
+    def get_report_configuration(self) -> Dict:
 
         self.logger.info("Buscando configuração de relatório para a UI.")
         

@@ -11,6 +11,9 @@ from app.core.models import ProjectState
 from app.core.export_manager import ExportManager
 from app.core.path_manager import PathManager
 from app.core.app_configuration_service import AppConfigService
+from app.core.config import settings
+
+
 #===========================================================
 # Classe: ProjectManager
 #-----------------------------------------------------------
@@ -162,8 +165,30 @@ class ProjectManager:
     # -----------------------
     # Configuration
     # -----------------------
-    def get_report_config(self, project_name: str) -> Dict:
-        return self.config.get_report_configuration(project_name)
+    def get_report_config(self) -> Dict:
+        return self.config.get_report_configuration()
 
     def save_report_config(self, project_name: str, config_data: Dict) -> bool:
         return self.config.save_report_configuration(config_data, project_name)
+
+    def update_api_key(self, new_key:str) -> bool:
+        return self.app_config.update_api_key(new_key=new_key)
+    
+    def update_extraction_model(self, new_model:str) -> bool:
+        return self.app_config.update_extraction_model(new_model=new_model)
+
+    def update_criteria_model(self, new_model:str) -> bool:
+        return self.app_config.update_criteria_model(new_model=new_model)
+    
+    def get_extraction_model(self) -> str:
+        return settings.extraction_model
+
+    def get_criteria_model(self) -> str:
+        return settings.criteria_model
+
+    def get_current_api_key(self)-> str:
+        return settings.api_key
+
+    def get_criteria_db_path(self) -> str:
+        return self.path.get_criteria_database()
+

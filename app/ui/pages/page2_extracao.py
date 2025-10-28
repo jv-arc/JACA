@@ -210,7 +210,7 @@ def render_editing_interface(category_key: str, category_info: Dict, files: List
 #---------------------------------------------------------------
 # Renderiza uma seção completa para uma categoria de documento.
 #---------------------------------------------------------------
-def render_category_section(project_name, category_key: str, category_info: Dict):
+def render_category_section(project_name: str, category_key: str, category_info: Dict):
     with st.container(border=True):
         
         # -- Cabecalho Simples --

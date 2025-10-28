@@ -6,8 +6,6 @@ from app.core.path_manager import PathManager
 from app.core.logger import Logger
 from app.core.project_crud_service import ProjectCRUDService
 from app.core.data_manager import ExtractedDataManager
-from app.core.ai_client import gemini_client
-
 from app.core.models import *
 
 
